@@ -1,8 +1,6 @@
 -- =====================================================================
--- MOBILE DEALS - OPTIONAL SEED DATA FOR SUPABASE SQL EDITOR
--- Run this AFTER running schema.sql if you wish to populate initial categories,
--- sample banners, and real Qatar tech products.
--- Note: You can edit or delete all of this anytime through the Admin Dashboard!
+-- MOBILE DEALS - COMPLETE SEED DATA FOR SUPABASE SQL EDITOR
+-- Run this AFTER running schema.sql in your Supabase Dashboard SQL Editor
 -- =====================================================================
 
 -- 1. SEED INITIAL 10 CATEGORIES
@@ -23,15 +21,25 @@ SET name = EXCLUDED.name,
     image_url = EXCLUDED.image_url,
     display_order = EXCLUDED.display_order;
 
--- 2. SEED HERO BANNER
+-- 2. SEED BRANDS
+INSERT INTO public.brands (name, slug, is_active)
+VALUES
+    ('Apple', 'apple', true),
+    ('Samsung', 'samsung', true),
+    ('Xiaomi', 'xiaomi', true),
+    ('Anker', 'anker', true),
+    ('Huawei', 'huawei', true)
+ON CONFLICT (slug) DO NOTHING;
+
+-- 3. SEED HERO BANNER
 INSERT INTO public.banners (title, highlighted_text, description, primary_cta_text, primary_cta_link, secondary_cta_text, secondary_cta_link, desktop_image_url, position, display_order, is_active)
 VALUES
     (
         'Latest Tech Best Deals in Qatar',
         'Best Deals',
-        'Mobiles, accessories and more at the best prices. Cash on delivery. Fast & reliable.',
-        'Shop Now',
-        '#deals',
+        'Mobiles, accessories and more at the best prices. Cash on delivery. Fast & reliable doorstep shipping across Qatar.',
+        'Shop Deals',
+        '/#deals',
         'Order on WhatsApp',
         'https://wa.me/97455000000',
         'https://images.unsplash.com/photo-1616469829941-c7200edec809?w=1200&auto=format&fit=crop&q=80',
@@ -40,3 +48,14 @@ VALUES
         true
     )
 ON CONFLICT DO NOTHING;
+
+-- 4. SEED SAMPLE PRODUCTS
+INSERT INTO public.products (name, slug, short_description, price, compare_at_price, stock, free_gift, badge_text, is_today_deal, is_best_deal, is_featured, is_best_seller, is_active)
+VALUES
+    ('Samsung Galaxy Z Fold 8 5G', 'samsung-galaxy-z-fold-8-5g', '12GB RAM / 256GB Storage - Qatar Official Warranty', 5649.00, 6199.00, 8, 'Samsung 65W GaN Super Charger', 'Free Gift', true, true, true, false, true),
+    ('Samsung Galaxy S25 FE 5G', 'samsung-galaxy-s25-fe-5g', '8GB RAM / 256GB Storage - Fast Charging', 1829.00, 2199.00, 14, NULL, 'Best Seller', true, false, true, true, true),
+    ('Redmi 17 5G Tech Bundle', 'redmi-17-5g-tech-bundle', '8GB RAM / 256GB Storage + TWS Earbuds Included', 769.00, 899.00, 18, NULL, 'With Buds', true, false, false, false, true)
+ON CONFLICT (slug) DO UPDATE
+SET price = EXCLUDED.price,
+    compare_at_price = EXCLUDED.compare_at_price,
+    stock = EXCLUDED.stock;

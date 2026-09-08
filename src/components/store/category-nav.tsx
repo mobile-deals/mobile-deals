@@ -65,7 +65,7 @@ export function CategoryNav({ categories = [] }: CategoryNavProps) {
   return (
     <nav
       aria-label="Category Navigation"
-      className="bg-white border-b border-neutral-200 text-neutral-800 text-xs shadow-2xs"
+      className="hidden md:block bg-white border-b border-neutral-200 text-neutral-800 text-xs shadow-2xs"
     >
       <div className="max-w-7xl mx-auto px-4 flex items-center gap-2 overflow-hidden">
         {/* Categories Dropdown trigger */}

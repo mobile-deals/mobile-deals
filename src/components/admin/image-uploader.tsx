@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { getCloudinaryUploadSignature } from "@/app/actions/cloudinary";
+import { uploadImageServerAction } from "@/app/actions/cloudinary";
 import { UploadCloud, Loader2, CheckCircle2, AlertCircle, X, Image as ImageIcon } from "lucide-react";
 
 interface ImageUploaderProps {
@@ -20,7 +20,6 @@ export function ImageUploader({
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,56 +28,30 @@ export function ImageUploader({
 
     setError(null);
     setUploading(true);
-    setUploadProgress(10);
 
     try {
-      // 1. Get secure signature from server
-      const sigRes = await getCloudinaryUploadSignature(folder);
-      if (!sigRes.success || !sigRes.data) {
-        throw new Error(sigRes.error || "Failed to generate upload signature.");
-      }
-
-      setUploadProgress(30);
-
-      const { signature, timestamp, apiKey, cloudName } = sigRes.data;
-
-      // 2. Direct browser upload to Cloudinary (zero Vercel serverless load)
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("api_key", apiKey);
-      formData.append("timestamp", String(timestamp));
-      formData.append("signature", signature);
       formData.append("folder", folder);
 
-      setUploadProgress(60);
+      const res = await uploadImageServerAction(formData);
 
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      setUploadProgress(90);
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error?.message || "Cloudinary upload failed.");
+      if (!res.success || !res.url) {
+        throw new Error(
+          res.error ||
+            "Upload failed. Please check your Cloudinary credentials or paste a direct image URL below."
+        );
       }
 
-      const data = await res.json();
-      setUploadProgress(100);
-
-      if (data.secure_url) {
-        onChange(data.secure_url);
-      }
+      onChange(res.url);
     } catch (err: unknown) {
-      console.error("[Cloudinary Upload]", err);
-      setError((err as Error).message || "Upload failed. You can paste a direct URL below.");
+      console.error("[Cloudinary Upload Error]", err);
+      setError(
+        (err as Error).message ||
+          "Upload failed. You can also paste an image URL directly below."
+      );
     } finally {
       setUploading(false);
-      setUploadProgress(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -87,39 +60,39 @@ export function ImageUploader({
 
   return (
     <div className="space-y-2">
-      <label className="block font-bold text-neutral-700 text-xs flex items-center justify-between">
+      <label className="block font-bold text-neutral-300 text-xs flex items-center justify-between">
         <span className="flex items-center gap-1.5">
-          <ImageIcon className="w-3.5 h-3.5 text-[#8A1538]" />
+          <ImageIcon className="w-3.5 h-3.5 text-[#ff4b77]" />
           <span>{label}</span>
         </span>
-        <span className="text-[10px] text-neutral-400 font-normal">Direct to Cloudinary</span>
+        <span className="text-[10px] text-neutral-500 font-normal">Cloudinary Media</span>
       </label>
 
       {/* Preview if image is already set */}
       {value ? (
-        <div className="relative flex items-center gap-3 p-3 rounded-2xl bg-neutral-50 border border-neutral-200">
-          <div className="relative w-16 h-16 rounded-xl bg-white border border-neutral-200 overflow-hidden shrink-0">
+        <div className="relative flex items-center gap-3 p-3 rounded-2xl bg-neutral-950 border border-neutral-800">
+          <div className="relative w-16 h-16 rounded-xl bg-neutral-900 border border-neutral-800 overflow-hidden shrink-0">
             <Image
               src={value}
-              alt="Uploaded image preview"
+              alt="Uploaded preview"
               fill
               sizes="64px"
               className="object-contain p-1"
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1 text-emerald-700 text-xs font-bold">
+            <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Image Uploaded to Cloudinary</span>
+              <span>Image Attached</span>
             </div>
-            <p className="text-[11px] text-neutral-500 font-mono truncate mt-0.5" title={value}>
+            <p className="text-[11px] text-neutral-400 font-mono truncate mt-0.5" title={value}>
               {value}
             </p>
           </div>
           <button
             type="button"
             onClick={() => onChange("")}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
             title="Remove image"
           >
             <X className="w-4 h-4" />
@@ -131,8 +104,8 @@ export function ImageUploader({
           onClick={() => fileInputRef.current?.click()}
           className={`cursor-pointer rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
             uploading
-              ? "border-[#8A1538] bg-[#8A1538]/5"
-              : "border-neutral-300 hover:border-[#8A1538] hover:bg-neutral-50"
+              ? "border-[#8A1538] bg-[#8A1538]/10"
+              : "border-neutral-800 bg-neutral-950 hover:border-[#8A1538] hover:bg-neutral-900"
           }`}
         >
           <input
@@ -145,20 +118,20 @@ export function ImageUploader({
 
           {uploading ? (
             <div className="space-y-2 py-2 flex flex-col items-center justify-center">
-              <Loader2 className="w-6 h-6 text-[#8A1538] animate-spin" />
-              <span className="text-xs font-bold text-neutral-800">
-                Uploading directly to Cloudinary... ({uploadProgress || 50}%)
+              <Loader2 className="w-6 h-6 text-[#ff4b77] animate-spin" />
+              <span className="text-xs font-bold text-neutral-200">
+                Uploading to Cloudinary...
               </span>
             </div>
           ) : (
             <div className="space-y-1.5 py-1 flex flex-col items-center justify-center">
-              <div className="w-9 h-9 rounded-xl bg-[#8A1538]/10 text-[#8A1538] flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-[#8A1538]/20 text-[#ff4b77] flex items-center justify-center">
                 <UploadCloud className="w-5 h-5" />
               </div>
-              <p className="text-xs font-bold text-neutral-800">
+              <p className="text-xs font-bold text-neutral-200">
                 Click to browse &amp; upload image
               </p>
-              <p className="text-[10px] text-neutral-400">
+              <p className="text-[10px] text-neutral-500">
                 PNG, JPG, WEBP up to 10MB
               </p>
             </div>
@@ -172,15 +145,15 @@ export function ImageUploader({
           type="url"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Or paste Cloudinary URL: https://res.cloudinary.com/noeooeae/..."
-          className="w-full px-3 py-1.5 rounded-xl border border-neutral-200 text-xs text-neutral-700 placeholder:text-neutral-400 focus:outline-none focus:border-[#8A1538]"
+          placeholder="Or paste any direct Image URL (Unsplash / Cloudinary / Web)..."
+          className="w-full px-3.5 py-2 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#8A1538]"
         />
       </div>
 
       {error && (
-        <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-          <span>{error}</span>
+        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span className="leading-relaxed">{error}</span>
         </div>
       )}
     </div>

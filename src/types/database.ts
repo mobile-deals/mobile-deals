@@ -84,7 +84,7 @@ export interface Product {
 
 export interface Banner {
   id: string;
-  title: string;
+  title: string | null;
   highlighted_text: string | null;
   description: string | null;
   primary_cta_text: string | null;

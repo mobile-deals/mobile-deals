@@ -63,7 +63,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased text-neutral-900 bg-white min-h-screen flex flex-col selection:bg-[#8A1538] selection:text-white pb-14 md:pb-0">
+      <body
+        suppressHydrationWarning
+        className="font-sans antialiased text-neutral-900 bg-white min-h-screen flex flex-col selection:bg-[#8A1538] selection:text-white pb-14 md:pb-0"
+      >
         <CartProvider>
           <WishlistProvider>{children}</WishlistProvider>
         </CartProvider>

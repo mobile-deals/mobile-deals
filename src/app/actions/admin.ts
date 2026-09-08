@@ -2,13 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Category, Product, Banner, SiteSettings } from "@/types/database";
+import { SiteSettings } from "@/types/database";
 
 /* ======================================================================
    PRODUCT ACTIONS
    ====================================================================== */
 
-export async function createProductAction(data: {
+export interface ProductInputPayload {
+  id?: string;
   name: string;
   slug: string;
   category_id?: string | null;
@@ -26,17 +27,33 @@ export async function createProductAction(data: {
   is_today_deal?: boolean;
   is_best_seller?: boolean;
   is_new_arrival?: boolean;
+  deal_ends_at?: string | null;
   is_active?: boolean;
-  image_url?: string;
-}) {
+  specifications?: Record<string, string>;
+  images?: Array<{
+    image_url: string;
+    cloudinary_public_id?: string | null;
+    is_primary?: boolean;
+    display_order?: number;
+  }>;
+  variants?: Array<{
+    name: string;
+    sku?: string;
+    price?: number | null;
+    compare_at_price?: number | null;
+    stock?: number;
+  }>;
+}
+
+export async function createProductAction(data: ProductInputPayload) {
   try {
     const supabase = createAdminClient();
 
     const { data: product, error } = await supabase
       .from("products")
       .insert({
-        name: data.name,
-        slug: data.slug,
+        name: data.name.trim(),
+        slug: data.slug.trim(),
         category_id: data.category_id || null,
         brand_id: data.brand_id || null,
         short_description: data.short_description || null,
@@ -52,6 +69,8 @@ export async function createProductAction(data: {
         is_today_deal: data.is_today_deal ?? false,
         is_best_seller: data.is_best_seller ?? false,
         is_new_arrival: data.is_new_arrival ?? false,
+        deal_ends_at: data.deal_ends_at || null,
+        specifications: data.specifications || {},
         is_active: data.is_active ?? true,
       })
       .select("id")
@@ -59,21 +78,111 @@ export async function createProductAction(data: {
 
     if (error) throw error;
 
-    // If an image URL was provided, link it in product_images
-    if (data.image_url) {
-      await supabase.from("product_images").insert({
+    // Insert Images
+    if (data.images && data.images.length > 0) {
+      const imagesToInsert = data.images.map((img, idx) => ({
         product_id: product.id,
-        image_url: data.image_url,
-        is_primary: true,
-        display_order: 1,
-      });
+        image_url: img.image_url,
+        cloudinary_public_id: img.cloudinary_public_id || null,
+        is_primary: img.is_primary ?? idx === 0,
+        display_order: img.display_order ?? idx + 1,
+      }));
+      await supabase.from("product_images").insert(imagesToInsert);
+    }
+
+    // Insert Variants
+    if (data.variants && data.variants.length > 0) {
+      const variantsToInsert = data.variants.map((v) => ({
+        product_id: product.id,
+        name: v.name,
+        sku: v.sku || null,
+        price: v.price || null,
+        compare_at_price: v.compare_at_price || null,
+        stock: v.stock ?? 5,
+      }));
+      await supabase.from("product_variants").insert(variantsToInsert);
     }
 
     revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/admin/products");
+    return { success: true, id: product.id };
+  } catch (err: unknown) {
+    console.error("createProductAction error:", err);
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function updateProductAction(id: string, data: Partial<ProductInputPayload>) {
+  try {
+    const supabase = createAdminClient();
+
+    const updatePayload: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (data.name !== undefined) updatePayload.name = data.name.trim();
+    if (data.slug !== undefined) updatePayload.slug = data.slug.trim();
+    if (data.category_id !== undefined) updatePayload.category_id = data.category_id || null;
+    if (data.brand_id !== undefined) updatePayload.brand_id = data.brand_id || null;
+    if (data.short_description !== undefined) updatePayload.short_description = data.short_description;
+    if (data.description !== undefined) updatePayload.description = data.description;
+    if (data.price !== undefined) updatePayload.price = data.price;
+    if (data.compare_at_price !== undefined) updatePayload.compare_at_price = data.compare_at_price || null;
+    if (data.stock !== undefined) updatePayload.stock = data.stock;
+    if (data.warranty !== undefined) updatePayload.warranty = data.warranty;
+    if (data.free_gift !== undefined) updatePayload.free_gift = data.free_gift;
+    if (data.badge_text !== undefined) updatePayload.badge_text = data.badge_text;
+    if (data.is_featured !== undefined) updatePayload.is_featured = data.is_featured;
+    if (data.is_best_deal !== undefined) updatePayload.is_best_deal = data.is_best_deal;
+    if (data.is_today_deal !== undefined) updatePayload.is_today_deal = data.is_today_deal;
+    if (data.is_best_seller !== undefined) updatePayload.is_best_seller = data.is_best_seller;
+    if (data.is_new_arrival !== undefined) updatePayload.is_new_arrival = data.is_new_arrival;
+    if (data.deal_ends_at !== undefined) updatePayload.deal_ends_at = data.deal_ends_at || null;
+    if (data.specifications !== undefined) updatePayload.specifications = data.specifications;
+    if (data.is_active !== undefined) updatePayload.is_active = data.is_active;
+
+    const { error } = await supabase.from("products").update(updatePayload).eq("id", id);
+    if (error) throw error;
+
+    // Update Images if supplied
+    if (data.images !== undefined) {
+      await supabase.from("product_images").delete().eq("product_id", id);
+      if (data.images.length > 0) {
+        const imagesToInsert = data.images.map((img, idx) => ({
+          product_id: id,
+          image_url: img.image_url,
+          cloudinary_public_id: img.cloudinary_public_id || null,
+          is_primary: img.is_primary ?? idx === 0,
+          display_order: img.display_order ?? idx + 1,
+        }));
+        await supabase.from("product_images").insert(imagesToInsert);
+      }
+    }
+
+    // Update Variants if supplied
+    if (data.variants !== undefined) {
+      await supabase.from("product_variants").delete().eq("product_id", id);
+      if (data.variants.length > 0) {
+        const variantsToInsert = data.variants.map((v) => ({
+          product_id: id,
+          name: v.name,
+          sku: v.sku || null,
+          price: v.price || null,
+          compare_at_price: v.compare_at_price || null,
+          stock: v.stock ?? 5,
+        }));
+        await supabase.from("product_variants").insert(variantsToInsert);
+      }
+    }
+
+    revalidatePath("/");
+    revalidatePath(`/products/${data.slug || id}`);
+    revalidatePath("/admin");
     revalidatePath("/admin/products");
     return { success: true };
   } catch (err: unknown) {
-    console.error("createProductAction error:", err);
+    console.error("updateProductAction error:", err);
     return { success: false, error: (err as Error).message };
   }
 }
@@ -85,6 +194,7 @@ export async function deleteProductAction(id: string) {
     if (error) throw error;
 
     revalidatePath("/");
+    revalidatePath("/admin");
     revalidatePath("/admin/products");
     return { success: true };
   } catch (err: unknown) {
@@ -110,6 +220,81 @@ export async function toggleProductActiveAction(id: string, currentStatus: boole
 }
 
 /* ======================================================================
+   BRAND ACTIONS
+   ====================================================================== */
+
+export async function createBrandAction(data: {
+  name: string;
+  slug: string;
+  logo_url?: string;
+  is_active?: boolean;
+}) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("brands").insert({
+      name: data.name.trim(),
+      slug: data.slug.trim(),
+      logo_url: data.logo_url || null,
+      is_active: data.is_active ?? true,
+    });
+    if (error) throw error;
+
+    revalidatePath("/admin/brands");
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function updateBrandAction(
+  id: string,
+  data: { name?: string; slug?: string; logo_url?: string; is_active?: boolean }
+) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("brands").update(data).eq("id", id);
+    if (error) throw error;
+
+    revalidatePath("/admin/brands");
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function deleteBrandAction(id: string) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("brands").delete().eq("id", id);
+    if (error) throw error;
+
+    revalidatePath("/admin/brands");
+    revalidatePath("/admin/products");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function toggleBrandActiveAction(id: string, currentStatus: boolean) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("brands")
+      .update({ is_active: !currentStatus })
+      .eq("id", id);
+    if (error) throw error;
+
+    revalidatePath("/admin/brands");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+/* ======================================================================
    CATEGORY ACTIONS
    ====================================================================== */
 
@@ -118,22 +303,54 @@ export async function createCategoryAction(data: {
   slug: string;
   description?: string;
   image_url?: string;
+  icon_name?: string;
   display_order?: number;
   is_active?: boolean;
 }) {
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("categories").insert({
-      name: data.name,
-      slug: data.slug,
+      name: data.name.trim(),
+      slug: data.slug.trim(),
       description: data.description || null,
       image_url: data.image_url || null,
+      icon_name: data.icon_name || null,
       display_order: data.display_order ?? 0,
       is_active: data.is_active ?? true,
     });
     if (error) throw error;
 
     revalidatePath("/");
+    revalidatePath("/categories");
+    revalidatePath("/admin/categories");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function updateCategoryAction(
+  id: string,
+  data: {
+    name?: string;
+    slug?: string;
+    description?: string;
+    image_url?: string;
+    icon_name?: string;
+    display_order?: number;
+    is_active?: boolean;
+  }
+) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("categories")
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) throw error;
+
+    revalidatePath("/");
+    revalidatePath("/categories");
     revalidatePath("/admin/categories");
     return { success: true };
   } catch (err: unknown) {
@@ -148,6 +365,7 @@ export async function deleteCategoryAction(id: string) {
     if (error) throw error;
 
     revalidatePath("/");
+    revalidatePath("/categories");
     revalidatePath("/admin/categories");
     return { success: true };
   } catch (err: unknown) {
@@ -160,33 +378,68 @@ export async function deleteCategoryAction(id: string) {
    ====================================================================== */
 
 export async function createBannerAction(data: {
-  title: string;
-  highlighted_text?: string;
-  description?: string;
-  primary_cta_text?: string;
-  primary_cta_link?: string;
-  secondary_cta_text?: string;
-  secondary_cta_link?: string;
+  title?: string;
+  highlighted_text?: string | null;
+  description?: string | null;
+  primary_cta_text?: string | null;
+  primary_cta_link?: string | null;
+  secondary_cta_text?: string | null;
+  secondary_cta_link?: string | null;
   desktop_image_url: string;
-  mobile_image_url?: string;
+  mobile_image_url?: string | null;
+  position?: string;
   display_order?: number;
   is_active?: boolean;
 }) {
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from("banners").insert({
-      title: data.title,
-      highlighted_text: data.highlighted_text || null,
-      description: data.description || null,
-      primary_cta_text: data.primary_cta_text || "Shop Now",
-      primary_cta_link: data.primary_cta_link || "#deals",
-      secondary_cta_text: data.secondary_cta_text || "Order on WhatsApp",
-      secondary_cta_link: data.secondary_cta_link || null,
+      title: data.title?.trim() || "",
+      highlighted_text: data.highlighted_text?.trim() || null,
+      description: data.description?.trim() || null,
+      primary_cta_text: data.primary_cta_text?.trim() || null,
+      primary_cta_link: data.primary_cta_link?.trim() || null,
+      secondary_cta_text: data.secondary_cta_text?.trim() || null,
+      secondary_cta_link: data.secondary_cta_link?.trim() || null,
       desktop_image_url: data.desktop_image_url,
       mobile_image_url: data.mobile_image_url || null,
+      position: data.position || "hero",
       display_order: data.display_order ?? 0,
       is_active: data.is_active ?? true,
     });
+    if (error) throw error;
+
+    revalidatePath("/");
+    revalidatePath("/admin/banners");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function updateBannerAction(
+  id: string,
+  data: Partial<{
+    title: string | null;
+    highlighted_text: string | null;
+    description: string | null;
+    primary_cta_text: string | null;
+    primary_cta_link: string | null;
+    secondary_cta_text: string | null;
+    secondary_cta_link: string | null;
+    desktop_image_url: string;
+    mobile_image_url: string | null;
+    position: string;
+    display_order: number;
+    is_active: boolean;
+  }>
+) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("banners")
+      .update({ ...data, updated_at: new Date().toISOString() })
+      .eq("id", id);
     if (error) throw error;
 
     revalidatePath("/");
@@ -212,7 +465,7 @@ export async function deleteBannerAction(id: string) {
 }
 
 /* ======================================================================
-   ORDER STATUS ACTION
+   ORDER ACTIONS
    ====================================================================== */
 
 export async function updateOrderStatusAction(
@@ -227,6 +480,22 @@ export async function updateOrderStatusAction(
       .eq("id", orderId);
     if (error) throw error;
 
+    revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function deleteOrderAction(orderId: string) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (error) throw error;
+
+    revalidatePath("/admin");
     revalidatePath("/admin/orders");
     return { success: true };
   } catch (err: unknown) {
@@ -265,7 +534,7 @@ export async function seedInitialDataAction() {
   try {
     const supabase = createAdminClient();
 
-    // 1. Initial 10 Categories
+    // 1. Initial Categories
     const categoriesToSeed = [
       {
         name: "Keyboard & Mouse",
@@ -361,8 +630,18 @@ export async function seedInitialDataAction() {
 
     await supabase.from("categories").upsert(categoriesToSeed, { onConflict: "slug" });
 
-    // 2. Initial Sample Deals Products
-    interface SeedProduct {
+    // 2. Initial Brands
+    const brandsToSeed = [
+      { name: "Apple", slug: "apple", is_active: true },
+      { name: "Samsung", slug: "samsung", is_active: true },
+      { name: "Xiaomi", slug: "xiaomi", is_active: true },
+      { name: "Anker", slug: "anker", is_active: true },
+      { name: "Huawei", slug: "huawei", is_active: true },
+    ];
+    await supabase.from("brands").upsert(brandsToSeed, { onConflict: "slug" });
+
+    // 3. Initial Sample Products
+    interface SeedProductItem {
       name: string;
       slug: string;
       short_description: string;
@@ -379,11 +658,11 @@ export async function seedInitialDataAction() {
       image_url: string;
     }
 
-    const productsToSeed: SeedProduct[] = [
+    const productsToSeed: SeedProductItem[] = [
       {
         name: "Samsung Galaxy Z Fold 8 5G",
         slug: "samsung-galaxy-z-fold-8-5g",
-        short_description: "12GB RAM / 256GB Storage",
+        short_description: "12GB RAM / 256GB Storage - Qatar Official Warranty",
         price: 5649,
         compare_at_price: 6199,
         stock: 8,
@@ -398,26 +677,9 @@ export async function seedInitialDataAction() {
           "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=600&auto=format&fit=crop&q=80",
       },
       {
-        name: "Samsung Galaxy Z Fold 8 512GB",
-        slug: "samsung-galaxy-z-fold-8-512gb",
-        short_description: "12GB RAM / 512GB Storage",
-        price: 6299,
-        compare_at_price: 6899,
-        stock: 5,
-        free_gift: "Galaxy SmartTag 2",
-        badge_text: "Free Gift",
-        is_today_deal: true,
-        is_best_deal: true,
-        is_featured: false,
-        is_best_seller: false,
-        is_active: true,
-        image_url:
-          "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=600&auto=format&fit=crop&q=80",
-      },
-      {
         name: "Samsung Galaxy S25 FE 5G",
         slug: "samsung-galaxy-s25-fe-5g",
-        short_description: "8GB RAM / 256GB Storage",
+        short_description: "8GB RAM / 256GB Storage - Fast Charging",
         price: 1829,
         compare_at_price: 2199,
         stock: 14,
@@ -432,43 +694,9 @@ export async function seedInitialDataAction() {
           "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80",
       },
       {
-        name: "Samsung Galaxy A57 5G",
-        slug: "samsung-galaxy-a57-5g",
-        short_description: "8GB RAM / 256GB Storage",
-        price: 1259,
-        compare_at_price: 1499,
-        stock: 20,
-        free_gift: "Original Samsung Back Cover",
-        badge_text: "Free Gift",
-        is_today_deal: true,
-        is_best_deal: false,
-        is_featured: false,
-        is_best_seller: false,
-        is_active: true,
-        image_url:
-          "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=600&auto=format&fit=crop&q=80",
-      },
-      {
-        name: "Redmi A7 Dynamic Edition",
-        slug: "redmi-a7-dynamic-edition",
-        short_description: "3GB RAM / 64GB Storage",
-        price: 349,
-        compare_at_price: 399,
-        stock: 25,
-        free_gift: null,
-        badge_text: null,
-        is_today_deal: true,
-        is_best_deal: false,
-        is_featured: false,
-        is_best_seller: false,
-        is_active: true,
-        image_url:
-          "https://images.unsplash.com/photo-1574944985070-8f3ebc6b79d2?w=600&auto=format&fit=crop&q=80",
-      },
-      {
         name: "Redmi 17 5G Tech Bundle",
         slug: "redmi-17-5g-tech-bundle",
-        short_description: "8GB RAM / 256GB Storage",
+        short_description: "8GB RAM / 256GB Storage + TWS Earbuds Included",
         price: 769,
         compare_at_price: 899,
         stock: 18,
@@ -488,7 +716,7 @@ export async function seedInitialDataAction() {
       const { image_url, ...productFields } = p;
       const { data: insertedProduct, error: pError } = await supabase
         .from("products")
-        .upsert(productFields, { onConflict: "slug" })
+        .upsert(productFields as any, { onConflict: "slug" })
         .select("id")
         .single();
 

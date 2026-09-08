@@ -2,75 +2,54 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  deleteProductAction,
-  toggleProductActiveAction,
-} from "@/app/actions/admin";
+import { deleteBrandAction, toggleBrandActiveAction } from "@/app/actions/admin";
 import { Trash2, CheckCircle2, XCircle, Loader2 } from "lucide-react";
 
-interface ProductActionsProps {
-  id?: string;
-  productId?: string;
-  slug?: string;
-  isActive: boolean;
-  productName?: string;
-}
-
-export function ProductActions({
+export function BrandActions({
   id,
-  productId,
   isActive,
-  productName,
-}: ProductActionsProps) {
-  const targetId = id || productId || "";
+}: {
+  id: string;
+  isActive: boolean;
+}) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  const handleToggle = async () => {
-    if (!targetId) return;
+  const handleToggleActive = async () => {
     setLoading(true);
-    await toggleProductActiveAction(targetId, isActive);
+    await toggleBrandActiveAction(id, isActive);
     router.refresh();
     setLoading(false);
   };
 
   const handleDelete = async () => {
-    if (!targetId) return;
-    if (!confirm(`Are you sure you want to delete this product?`)) {
-      return;
-    }
+    if (!window.confirm("Are you sure you want to delete this brand?")) return;
     setLoading(true);
-    await deleteProductAction(targetId);
+    await deleteBrandAction(id);
     router.refresh();
     setLoading(false);
   };
 
-  if (loading) {
-    return <Loader2 className="w-4 h-4 animate-spin text-neutral-400" />;
-  }
-
   return (
     <div className="flex items-center justify-end gap-1.5">
       <button
-        type="button"
-        onClick={handleToggle}
+        onClick={handleToggleActive}
         disabled={loading}
+        title={isActive ? "Disable brand" : "Enable brand"}
         className={`p-1.5 rounded-lg border transition-colors ${
           isActive
             ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20"
             : "bg-neutral-800 border-neutral-700 text-neutral-500 hover:bg-neutral-700"
         }`}
-        title={isActive ? "Deactivate product" : "Activate product"}
       >
         {isActive ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
       </button>
 
       <button
-        type="button"
         onClick={handleDelete}
         disabled={loading}
+        title="Delete Brand"
         className="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-colors"
-        title="Delete product"
       >
         <Trash2 className="w-4 h-4" />
       </button>
