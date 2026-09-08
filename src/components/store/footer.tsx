@@ -91,11 +91,7 @@ export function Footer({
               <li>Qatar Nationwide Shipping</li>
               <li>Warranty &amp; Returns</li>
               <li>WhatsApp Direct Help</li>
-              <li>
-                <Link href="/admin" className="text-[#F59E0B] hover:underline font-semibold">
-                  Admin Panel Login
-                </Link>
-              </li>
+              <li>24/7 Order Support</li>
             </ul>
           </div>
 

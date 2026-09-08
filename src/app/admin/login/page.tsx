@@ -3,13 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { adminLoginAction } from "@/app/actions/auth";
-import { ShieldCheck, Lock, Mail, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ShieldCheck, Lock, Mail, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@mobiledeals.qa");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,7 +26,7 @@ export default function AdminLoginPage() {
       router.push("/admin");
       router.refresh();
     } else {
-      setError(result.error || "Login failed. Please check credentials.");
+      setError(result.error || "Login failed. Please check your email and password.");
       setLoading(false);
     }
   };
@@ -51,13 +52,13 @@ export default function AdminLoginPage() {
               Admin Portal Login
             </h1>
             <p className="text-xs text-neutral-400">
-              Enter your authorized credentials to access store controls.
+              Enter your authorized credentials to access store management.
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium animate-in fade-in duration-200">
               {error}
             </div>
           )}
@@ -69,15 +70,16 @@ export default function AdminLoginPage() {
                 Admin Email
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="email"
                   name="email"
                   required
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@mobiledeals.qa"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-neutral-800/80 border border-neutral-700 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#8A1538] transition-colors"
+                  placeholder="name@mobiledeals.qa"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-neutral-800/80 border border-neutral-700 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538]/30 transition-colors"
                 />
               </div>
             </div>
@@ -87,23 +89,32 @@ export default function AdminLoginPage() {
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-neutral-800/80 border border-neutral-700 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#8A1538] transition-colors"
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-neutral-800/80 border border-neutral-700 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538]/30 transition-colors"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white transition-colors focus:outline-none"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-[#8A1538] hover:bg-[#6c102c] disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#8A1538]/20 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl bg-[#8A1538] hover:bg-[#6c102c] disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#8A1538]/20 cursor-pointer active:scale-[0.99]"
             >
               {loading ? (
                 <>
@@ -118,22 +129,14 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Access Helper */}
-          <div className="pt-4 border-t border-neutral-800/80 flex items-center justify-between text-[11px] text-neutral-500">
-            <span className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Pre-filled demo credentials
-            </span>
-            <span className="font-mono text-neutral-400">admin123</span>
-          </div>
         </div>
 
         {/* Footer info */}
         <p className="text-center text-[11px] text-neutral-600 mt-6">
-          Mobile Deals Qatar &bull; Secured with Supabase SSR &amp; Role-based Access
+          Mobile Deals Qatar &bull; Authorized Personnel Only
         </p>
       </div>
     </div>
   );
 }
+

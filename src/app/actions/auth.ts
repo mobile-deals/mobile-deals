@@ -50,7 +50,7 @@ export async function adminLoginAction(formData: FormData) {
 
     if (
       cleanEmail === configuredAdminEmail &&
-      (cleanPassword === configuredAdminPassword || cleanPassword === "admin123" || cleanPassword === "mobiledeals@2025")
+      cleanPassword === configuredAdminPassword
     ) {
       const cookieStore = await cookies();
       cookieStore.set(ADMIN_COOKIE_NAME, JSON.stringify({

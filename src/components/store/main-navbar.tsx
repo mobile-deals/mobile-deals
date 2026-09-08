@@ -316,16 +316,6 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
 
           {/* Right Action Icons & WhatsApp Button */}
           <div className="flex items-center gap-4 md:gap-5">
-            {/* Account / Admin Link */}
-            <Link
-              href="/admin"
-              className="flex flex-col items-center text-neutral-700 hover:text-[#8A1538] transition-colors p-1"
-              title="Admin & Account"
-            >
-              <User className="w-5 h-5 text-neutral-600 hover:text-[#8A1538]" />
-              <span className="text-[11px] font-medium hidden lg:inline mt-0.5">Account</span>
-            </Link>
-
             {/* Wishlist */}
             <Link
               href="/#deals"
@@ -474,14 +464,6 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
                   <span className="px-2 py-0.5 rounded-full bg-[#8A1538] text-white text-xs font-bold">
                     {totalItems}
                   </span>
-                </Link>
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-[#8A1538] bg-[#8A1538]/5 hover:bg-[#8A1538]/10 transition-colors"
-                >
-                  <span>Admin Dashboard</span>
-                  <ChevronRight className="w-4 h-4 text-[#8A1538]" />
                 </Link>
               </div>
             </div>
