@@ -84,13 +84,13 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
               No Active Deals Scheduled Right Now
             </h3>
             <p className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto mt-1 mb-4">
-              Products can be flagged as &ldquo;Today&rsquo;s Deal&rdquo; directly in the Admin Panel.
+              Check back soon for our daily exclusive discount offers and bundles.
             </p>
             <Link
-              href="/admin/products"
+              href="/#categories"
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#8A1538] text-white text-xs font-semibold rounded-lg shadow-2xs hover:bg-[#720e2c]"
             >
-              Add Deals in Admin
+              Browse Categories
             </Link>
           </div>
         ) : (

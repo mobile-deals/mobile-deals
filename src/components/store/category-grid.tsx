@@ -97,14 +97,13 @@ export function CategoryGrid({ categories = [] }: CategoryGridProps) {
             <PackageOpen className="w-12 h-12 mx-auto text-neutral-400 mb-3" />
             <h3 className="text-base font-bold text-neutral-800">No Categories Found</h3>
             <p className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto mt-1 mb-5">
-              Categories added from the Admin Dashboard will appear here.
+              Check back soon for the latest mobile categories and collections.
             </p>
             <Link
-              href="/admin/categories"
+              href="/#deals"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#8A1538] text-white text-xs font-bold rounded-xl shadow-md hover:bg-[#6e102c] transition-all"
             >
-              <Layers className="w-4 h-4" />
-              <span>Manage Categories</span>
+              <span>Explore Deals</span>
             </Link>
           </div>
         ) : (

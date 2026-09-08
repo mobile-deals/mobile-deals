@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, Flame, MessageCircle, User, LucideIcon } from "lucide-react";
+import { Home, LayoutGrid, Flame, MessageCircle, ShoppingCart, LucideIcon } from "lucide-react";
+import { useCart } from "@/hooks/use-cart";
 
 interface MobileBottomNavProps {
   whatsappNumber?: string;
@@ -15,12 +16,14 @@ interface NavItem {
   icon: LucideIcon;
   isActive: boolean;
   isExternal?: boolean;
+  badge?: number;
 }
 
 export function MobileBottomNav({
   whatsappNumber = "+97455000000",
 }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const { totalItems } = useCart();
   const whatsappCleanNumber = whatsappNumber.replace(/[^\d]/g, "");
 
   const navItems: NavItem[] = [
@@ -52,10 +55,11 @@ export function MobileBottomNav({
       isExternal: true,
     },
     {
-      label: "Account",
-      href: "/admin",
-      icon: User,
-      isActive: pathname.startsWith("/admin"),
+      label: "Cart",
+      href: "/cart",
+      icon: ShoppingCart,
+      isActive: pathname === "/cart",
+      badge: totalItems,
     },
   ];
 
@@ -89,7 +93,14 @@ export function MobileBottomNav({
                 isCurrent ? "text-[#8A1538]" : "text-neutral-500 hover:text-neutral-900"
               }`}
             >
-              <Icon className={`w-5 h-5 ${isCurrent ? "stroke-[2.5]" : ""}`} />
+              <div className="relative">
+                <Icon className={`w-5 h-5 ${isCurrent ? "stroke-[2.5]" : ""}`} />
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-[#8A1538] text-white text-[9px] font-bold h-3.5 min-w-3.5 px-0.5 rounded-full flex items-center justify-center">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-[10px] mt-0.5 ${
                   isCurrent ? "font-bold text-[#8A1538]" : "font-medium"
