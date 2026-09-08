@@ -11,24 +11,31 @@ export function TrustBar() {
   ];
 
   return (
-    <div className="w-full bg-[#111111] text-white border-t border-neutral-800 py-6">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 text-center md:text-left">
+    <div className="w-full bg-[#111111] text-white border-t border-neutral-800/80 py-5 sm:py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-3 md:gap-6">
           {items.map((item, idx) => {
             const Icon = item.icon;
+            const isFifthItem = idx >= 4;
+
             return (
               <div
                 key={idx}
-                className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 p-2 group"
+                className={`items-center md:items-start gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-2xl bg-neutral-900/90 border border-neutral-800/80 md:bg-transparent md:border-0 md:p-0 group transition-all ${
+                  isFifthItem ? "hidden md:flex" : "flex"
+                }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-neutral-800/80 border border-neutral-700/60 flex items-center justify-center text-[#F59E0B] group-hover:scale-110 transition-transform shrink-0">
-                  <Icon className="w-5 h-5" />
+                {/* Icon Squircle */}
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform shrink-0 shadow-xs">
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight">
+
+                {/* Text Details */}
+                <div className="text-left min-w-0 flex-1">
+                  <h4 className="text-xs sm:text-sm font-bold text-white tracking-tight leading-snug truncate">
                     {item.title}
                   </h4>
-                  <p className="text-[11px] text-neutral-400 font-medium">
+                  <p className="text-[10px] sm:text-[11px] text-neutral-400 font-medium leading-tight truncate">
                     {item.subtitle}
                   </p>
                 </div>
@@ -40,3 +47,4 @@ export function TrustBar() {
     </div>
   );
 }
+

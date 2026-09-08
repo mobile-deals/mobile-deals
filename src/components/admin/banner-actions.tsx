@@ -1,21 +1,27 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { deleteBannerAction } from "@/app/actions/admin";
 import { Trash2, Loader2 } from "lucide-react";
 
 interface BannerActionsProps {
-  bannerId: string;
-  bannerTitle: string;
+  id?: string;
+  bannerId?: string;
+  bannerTitle?: string;
 }
 
-export function BannerActions({ bannerId, bannerTitle }: BannerActionsProps) {
+export function BannerActions({ id, bannerId, bannerTitle }: BannerActionsProps) {
+  const targetId = id || bannerId || "";
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm(`Delete banner "${bannerTitle}"?`)) return;
+    if (!targetId) return;
+    if (!confirm(`Are you sure you want to delete this banner?`)) return;
     setLoading(true);
-    await deleteBannerAction(bannerId);
+    await deleteBannerAction(targetId);
+    router.refresh();
     setLoading(false);
   };
 
@@ -27,7 +33,7 @@ export function BannerActions({ bannerId, bannerTitle }: BannerActionsProps) {
     <button
       type="button"
       onClick={handleDelete}
-      className="p-1 rounded-md text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+      className="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-colors"
       title="Delete banner"
     >
       <Trash2 className="w-4 h-4" />

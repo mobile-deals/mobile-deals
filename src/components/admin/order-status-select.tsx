@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { updateOrderStatusAction } from "@/app/actions/admin";
 import { Loader2 } from "lucide-react";
 
@@ -13,6 +14,7 @@ export function OrderStatusSelect({
   orderId,
   currentStatus,
 }: OrderStatusSelectProps) {
+  const router = useRouter();
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
 
@@ -21,7 +23,17 @@ export function OrderStatusSelect({
     setStatus(newStatus);
     setLoading(true);
     await updateOrderStatusAction(orderId, newStatus);
+    router.refresh();
     setLoading(false);
+  };
+
+  const statusStyleMap: Record<string, string> = {
+    pending: "bg-amber-500/10 text-amber-400 border-amber-500/30",
+    confirmed: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+    processing: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+    shipped: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30",
+    delivered: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    cancelled: "bg-rose-500/10 text-rose-400 border-rose-500/30",
   };
 
   return (
@@ -30,24 +42,16 @@ export function OrderStatusSelect({
         value={status}
         onChange={handleChange}
         disabled={loading}
-        className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition-colors ${
-          status === "delivered"
-            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-            : status === "shipped"
-            ? "bg-blue-50 text-blue-800 border-blue-300"
-            : status === "confirmed"
-            ? "bg-amber-50 text-amber-800 border-amber-300"
-            : status === "cancelled"
-            ? "bg-rose-50 text-rose-800 border-rose-300"
-            : "bg-neutral-50 text-neutral-800 border-neutral-300"
+        className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-colors cursor-pointer focus:outline-none ${
+          statusStyleMap[status] || "bg-neutral-900 text-neutral-300 border-neutral-700"
         }`}
       >
-        <option value="pending">Pending</option>
-        <option value="confirmed">Confirmed</option>
-        <option value="processing">Processing</option>
-        <option value="shipped">Shipped</option>
-        <option value="delivered">Delivered</option>
-        <option value="cancelled">Cancelled</option>
+        <option value="pending" className="bg-neutral-900 text-amber-400">Pending</option>
+        <option value="confirmed" className="bg-neutral-900 text-blue-400">Confirmed</option>
+        <option value="processing" className="bg-neutral-900 text-purple-400">Processing</option>
+        <option value="shipped" className="bg-neutral-900 text-cyan-400">Shipped</option>
+        <option value="delivered" className="bg-neutral-900 text-emerald-400">Delivered</option>
+        <option value="cancelled" className="bg-neutral-900 text-rose-400">Cancelled</option>
       </select>
       {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-400" />}
     </div>

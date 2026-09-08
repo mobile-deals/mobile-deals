@@ -10,11 +10,11 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-          Store Settings
+        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+          Store &amp; Communication Settings
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-500 font-medium">
-          Configure global store properties, WhatsApp numbers, and notification defaults.
+        <p className="text-xs sm:text-sm text-neutral-400 font-medium">
+          Configure global store properties, Qatar WhatsApp numbers, and notification defaults.
         </p>
       </div>
 
