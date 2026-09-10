@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createProductAction, updateProductAction, ProductInputPayload } from "@/app/actions/admin";
 import { Category, Brand, Product } from "@/types/database";
@@ -21,83 +21,176 @@ import {
   Trash2,
   PlusCircle,
   HelpCircle,
+  FileText,
 } from "lucide-react";
 
 interface ProductFormProps {
   product?: Product;
   categories: Category[];
   brands?: Brand[];
+  isOpen?: boolean;
+  onClose?: () => void;
   trigger?: React.ReactNode;
-  onSuccess?: () => void;
+  onSuccess?: (savedProduct?: Product) => void;
 }
 
 export function ProductForm({
   product,
   categories,
   brands = [],
+  isOpen,
+  onClose,
   trigger,
   onSuccess,
 }: ProductFormProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isControlled = typeof isOpen === "boolean";
+  const open = isControlled ? isOpen : internalOpen;
+
+  const handleClose = () => {
+    if (isControlled && onClose) {
+      onClose();
+    } else {
+      setInternalOpen(false);
+    }
+  };
 
   const isEditing = Boolean(product?.id);
 
   // Form State
-  const [name, setName] = useState(product?.name || "");
-  const [slug, setSlug] = useState(product?.slug || "");
-  const [categoryId, setCategoryId] = useState(product?.category_id || "");
-  const [brandId, setBrandId] = useState(product?.brand_id || "");
-  const [shortDesc, setShortDesc] = useState(product?.short_description || "");
-  const [description, setDescription] = useState(product?.description || "");
-  const [price, setPrice] = useState(product?.price ? String(product.price) : "");
-  const [compareAtPrice, setCompareAtPrice] = useState(
-    product?.compare_at_price ? String(product.compare_at_price) : ""
-  );
-  const [stock, setStock] = useState(product?.stock !== undefined ? String(product.stock) : "10");
-  const [warranty, setWarranty] = useState(product?.warranty || "1 Year Qatar Official Warranty");
-  const [freeGift, setFreeGift] = useState(product?.free_gift || "");
-  const [badgeText, setBadgeText] = useState(product?.badge_text || "");
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [brandId, setBrandId] = useState("");
+  const [shortDesc, setShortDesc] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [compareAtPrice, setCompareAtPrice] = useState("");
+  const [stock, setStock] = useState("10");
+  const [warranty, setWarranty] = useState("1 Year Qatar Official Warranty");
+
+  // Gift & Promotional Badge State
+  const [badgeText, setBadgeText] = useState("");
+  const [giftName, setGiftName] = useState("");
+  const [giftImage, setGiftImage] = useState("");
+  const [giftEnabled, setGiftEnabled] = useState(false);
 
   // Promotional Flags
-  const [isTodayDeal, setIsTodayDeal] = useState(product?.is_today_deal ?? false);
-  const [isBestDeal, setIsBestDeal] = useState(product?.is_best_deal ?? false);
-  const [isFeatured, setIsFeatured] = useState(product?.is_featured ?? false);
-  const [isBestSeller, setIsBestSeller] = useState(product?.is_best_seller ?? false);
-  const [isNewArrival, setIsNewArrival] = useState(product?.is_new_arrival ?? false);
-  const [dealEndsAt, setDealEndsAt] = useState(
-    product?.deal_ends_at ? product.deal_ends_at.slice(0, 16) : ""
-  );
-  const [isActive, setIsActive] = useState(product?.is_active ?? true);
+  const [isTodayDeal, setIsTodayDeal] = useState(false);
+  const [isBestDeal, setIsBestDeal] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isBestSeller, setIsBestSeller] = useState(false);
+  const [isNewArrival, setIsNewArrival] = useState(false);
+  const [dealEndsAt, setDealEndsAt] = useState("");
+  const [isActive, setIsActive] = useState(true);
 
   // Images state
-  const initialImages =
-    product?.product_images && product.product_images.length > 0
-      ? product.product_images.map((img) => ({
-          image_url: img.image_url,
-          cloudinary_public_id: img.cloudinary_public_id || null,
-          is_primary: img.is_primary,
-        }))
-      : [{ image_url: "", cloudinary_public_id: null, is_primary: true }];
-
-  const [images, setImages] = useState(initialImages);
+  const [images, setImages] = useState<
+    Array<{ image_url: string; cloudinary_public_id: string | null; is_primary: boolean }>
+  >([{ image_url: "", cloudinary_public_id: null, is_primary: true }]);
 
   // Variants state
-  const initialVariants =
-    product?.product_variants && product.product_variants.length > 0
-      ? product.product_variants.map((v) => ({
-          name: v.name,
-          sku: v.sku || "",
-          price: v.price ? String(v.price) : "",
-          stock: String(v.stock ?? 5),
-        }))
-      : [];
+  const [variants, setVariants] = useState<
+    Array<{ name: string; sku: string; price: string; stock: string }>
+  >([]);
 
-  const [variants, setVariants] = useState(initialVariants);
+  // Function to initialize/reset form with current product data or defaults
+  const resetForm = useCallback(() => {
+    if (product) {
+      setName(product.name || "");
+      setSlug(product.slug || "");
+      setCategoryId(product.category_id || "");
+      setBrandId(product.brand_id || "");
+      setShortDesc(product.short_description || "");
+      setDescription(product.description || "");
+      setPrice(product.price !== undefined && product.price !== null ? String(product.price) : "");
+      setCompareAtPrice(
+        product.compare_at_price !== undefined && product.compare_at_price !== null
+          ? String(product.compare_at_price)
+          : ""
+      );
+      setStock(product.stock !== undefined && product.stock !== null ? String(product.stock) : "10");
+      setWarranty(product.warranty || "1 Year Qatar Official Warranty");
 
-  // Auto-generate slug from name
+      // Initialize Gift & Badge
+      const isGiftActive = Boolean(
+        product.free_gift ||
+          product.specifications?.gift_enabled === "true" ||
+          (product.badge_text && product.badge_text.toLowerCase().includes("gift"))
+      );
+      setGiftEnabled(isGiftActive);
+      setBadgeText(product.badge_text || (isGiftActive ? "Free Gift" : ""));
+      setGiftName(product.free_gift || "");
+      setGiftImage(product.specifications?.gift_image || "");
+
+      setIsTodayDeal(product.is_today_deal ?? false);
+      setIsBestDeal(product.is_best_deal ?? false);
+      setIsFeatured(product.is_featured ?? false);
+      setIsBestSeller(product.is_best_seller ?? false);
+      setIsNewArrival(product.is_new_arrival ?? false);
+      setDealEndsAt(product.deal_ends_at ? product.deal_ends_at.slice(0, 16) : "");
+      setIsActive(product.is_active ?? true);
+
+      const loadedImages =
+        product.product_images && product.product_images.length > 0
+          ? product.product_images.map((img) => ({
+              image_url: img.image_url,
+              cloudinary_public_id: img.cloudinary_public_id || null,
+              is_primary: Boolean(img.is_primary),
+            }))
+          : [{ image_url: "", cloudinary_public_id: null, is_primary: true }];
+      setImages(loadedImages);
+
+      const loadedVariants =
+        product.product_variants && product.product_variants.length > 0
+          ? product.product_variants.map((v) => ({
+              name: v.name,
+              sku: v.sku || "",
+              price: v.price !== undefined && v.price !== null ? String(v.price) : "",
+              stock: String(v.stock ?? 5),
+            }))
+          : [];
+      setVariants(loadedVariants);
+    } else {
+      setName("");
+      setSlug("");
+      setCategoryId("");
+      setBrandId("");
+      setShortDesc("");
+      setDescription("");
+      setPrice("");
+      setCompareAtPrice("");
+      setStock("10");
+      setWarranty("1 Year Qatar Official Warranty");
+      setBadgeText("Free Gift");
+      setGiftName("");
+      setGiftImage("");
+      setGiftEnabled(false);
+      setIsTodayDeal(false);
+      setIsBestDeal(false);
+      setIsFeatured(false);
+      setIsBestSeller(false);
+      setIsNewArrival(false);
+      setDealEndsAt("");
+      setIsActive(true);
+      setImages([{ image_url: "", cloudinary_public_id: null, is_primary: true }]);
+      setVariants([]);
+    }
+    setError(null);
+  }, [product]);
+
+  // Sync state whenever modal opens or product changes
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, resetForm]);
+
+  // Auto-generate slug from name when creating
   const handleNameChange = (val: string) => {
     setName(val);
     if (!isEditing) {
@@ -114,7 +207,10 @@ export function ProductForm({
     if (!url) return;
     setImages((prev) => {
       const filtered = prev.filter((i) => i.image_url.trim().length > 0);
-      return [...filtered, { image_url: url, cloudinary_public_id: null, is_primary: filtered.length === 0 }];
+      return [
+        ...filtered,
+        { image_url: url, cloudinary_public_id: null, is_primary: filtered.length === 0 },
+      ];
     });
   };
 
@@ -163,37 +259,43 @@ export function ProductForm({
     try {
       if (!name.trim()) throw new Error("Product name is required.");
       if (!slug.trim()) throw new Error("Product slug is required.");
-      if (!price || Number(price) <= 0) throw new Error("A valid price is required.");
+      if (!price || Number(price) <= 0) throw new Error("A valid positive price is required.");
 
       const validImages = images
         .filter((img) => img.image_url.trim().length > 0)
         .map((img, idx) => ({
           image_url: img.image_url.trim(),
-          cloudinary_public_id: img.cloudinary_public_id,
+          cloudinary_public_id: img.cloudinary_public_id || null,
           is_primary: img.is_primary ?? idx === 0,
           display_order: idx + 1,
         }));
 
       const formattedVariants = variants.map((v) => ({
-        name: v.name,
-        sku: v.sku || undefined,
+        name: v.name.trim(),
+        sku: v.sku.trim() || undefined,
         price: v.price ? Number(v.price) : undefined,
         stock: v.stock ? Number(v.stock) : 5,
       }));
 
+      // Only keep real product spec keys — gift fields are stored in dedicated columns
+      const existingSpecs = { ...(product?.specifications || {}) } as Record<string, string>;
+      delete existingSpecs["gift_enabled"];
+      delete existingSpecs["gift_image"];
+      const finalSpecifications: Record<string, string> = existingSpecs;
+
       const payload: ProductInputPayload = {
-        name,
-        slug,
+        name: name.trim(),
+        slug: slug.trim(),
         category_id: categoryId || null,
         brand_id: brandId || null,
-        short_description: shortDesc || undefined,
-        description: description || undefined,
+        short_description: shortDesc.trim() || null as unknown as string,
+        description: description.trim() || null as unknown as string,
         price: Number(price),
         compare_at_price: compareAtPrice ? Number(compareAtPrice) : null,
-        stock: Number(stock) || 0,
-        warranty: warranty || undefined,
-        free_gift: freeGift || undefined,
-        badge_text: badgeText || undefined,
+        stock: stock !== "" ? Number(stock) : 10,
+        warranty: warranty.trim() || null as unknown as string,
+        free_gift: giftEnabled && giftName.trim() ? giftName.trim() : null as unknown as string,
+        badge_text: giftEnabled ? (badgeText.trim() || "Free Gift") : (badgeText.trim() || null as unknown as string),
         is_today_deal: isTodayDeal,
         is_best_deal: isBestDeal,
         is_featured: isFeatured,
@@ -201,6 +303,7 @@ export function ProductForm({
         is_new_arrival: isNewArrival,
         deal_ends_at: dealEndsAt ? new Date(dealEndsAt).toISOString() : null,
         is_active: isActive,
+        specifications: finalSpecifications,
         images: validImages,
         variants: formattedVariants,
       };
@@ -216,9 +319,9 @@ export function ProductForm({
         throw new Error(res.error || "Failed to save product.");
       }
 
-      setOpen(false);
+      handleClose();
       router.refresh();
-      if (onSuccess) onSuccess();
+      if (onSuccess) onSuccess(res.data as Product | undefined);
     } catch (err: unknown) {
       setError((err as Error).message || "An error occurred.");
     } finally {
@@ -229,13 +332,13 @@ export function ProductForm({
   return (
     <>
       {trigger ? (
-        <div onClick={() => setOpen(true)} className="cursor-pointer">
+        <div onClick={() => (isControlled ? undefined : setInternalOpen(true))} className="cursor-pointer">
           {trigger}
         </div>
       ) : (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={() => (isControlled ? undefined : setInternalOpen(true))}
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#8A1538] hover:bg-[#6c102c] text-white font-bold text-xs transition-all shadow-md cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -264,7 +367,7 @@ export function ProductForm({
 
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
                 className="p-1.5 rounded-xl bg-neutral-800 text-neutral-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
@@ -375,6 +478,20 @@ export function ProductForm({
                       className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538]"
                     />
                   </div>
+
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="font-semibold text-neutral-300 flex items-center justify-between">
+                      <span>Detailed Description</span>
+                      <span className="text-[10px] text-neutral-500 font-normal">Shown as "Product Overview" on store page</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Comprehensive product specifications, features, in-the-box contents..."
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538] resize-y text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -432,39 +549,84 @@ export function ProductForm({
 
               {/* SECTION 3: Marketing Badges & Promotional Flags */}
               <div className="space-y-4 pt-4 border-t border-neutral-800">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>3. Promotions &amp; Badges</span>
-                </h3>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="font-semibold text-neutral-300">
-                      Custom Badge (e.g. &ldquo;Free Gift&rdquo;, &ldquo;With Buds&rdquo;)
-                    </label>
-                    <input
-                      type="text"
-                      value={badgeText}
-                      onChange={(e) => setBadgeText(e.target.value)}
-                      placeholder="Free Gift"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="font-semibold text-neutral-300">
-                      Free Gift Description
-                    </label>
-                    <input
-                      type="text"
-                      value={freeGift}
-                      onChange={(e) => setFreeGift(e.target.value)}
-                      placeholder="Samsung 65W GaN Fast Charger"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538]"
-                    />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>3. Promotions &amp; Badges</span>
+                  </h3>
                 </div>
 
+                {/* Free Gift & Custom Badge Inputs */}
+                <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-neutral-300 flex items-center justify-between">
+                        <span>Custom Badge</span>
+                        <span className="text-[10px] text-neutral-500 font-normal">e.g. Free Gift, With Buds</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={badgeText}
+                        onChange={(e) => setBadgeText(e.target.value)}
+                        placeholder="Free Gift"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538]"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-neutral-300 flex items-center justify-between">
+                        <span>Gift Name</span>
+                        <span className="text-[10px] text-neutral-500 font-normal">Product item name</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={giftName}
+                        onChange={(e) => {
+                          setGiftName(e.target.value);
+                          if (e.target.value.trim() && !giftEnabled) {
+                            setGiftEnabled(true);
+                          }
+                        }}
+                        placeholder="e.g. Samsung 45 PD Charger"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-900 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Gift Image (Optional) */}
+                  <div className="space-y-1.5">
+                    <label className="font-semibold text-neutral-300 flex items-center justify-between">
+                      <span>Gift Image (Optional)</span>
+                      <span className="text-[10px] text-neutral-500 font-normal">Direct image URL or upload</span>
+                    </label>
+                    <ImageUploader
+                      value={giftImage}
+                      onChange={(url) => setGiftImage(url)}
+                      label="Upload Gift Thumbnail or enter URL"
+                    />
+                  </div>
+
+                  {/* Gift Enabled Checkbox */}
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-800 cursor-pointer hover:border-neutral-700 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={giftEnabled}
+                      onChange={(e) => setGiftEnabled(e.target.checked)}
+                      className="w-4 h-4 accent-[#8A1538] rounded"
+                    />
+                    <div>
+                      <span className="font-semibold text-amber-400 text-xs flex items-center gap-1.5">
+                        <Gift className="w-3.5 h-3.5" />
+                        <span>Gift Enabled</span>
+                      </span>
+                      <p className="text-[10px] text-neutral-400">
+                        When enabled, displays the promotional gift badge and gift subtitle on the product card.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Promotional Toggles */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                   <label className="flex items-center gap-2 p-3 rounded-xl bg-neutral-950 border border-neutral-800 cursor-pointer hover:border-neutral-700">
                     <input
@@ -654,8 +816,8 @@ export function ProductForm({
               <div className="pt-6 border-t border-neutral-800 flex items-center justify-end gap-3 sticky bottom-0 bg-neutral-900 z-10">
                 <button
                   type="button"
-                  onClick={() => setOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold"
+                  onClick={handleClose}
+                  className="px-4 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-bold cursor-pointer"
                 >
                   Cancel
                 </button>

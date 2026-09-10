@@ -60,18 +60,18 @@ export async function createProductAction(data: ProductInputPayload) {
         description: data.description || null,
         price: data.price,
         compare_at_price: data.compare_at_price || null,
-        stock: data.stock ?? 10,
+        stock: data.stock !== undefined ? data.stock : 10,
         warranty: data.warranty || null,
         free_gift: data.free_gift || null,
         badge_text: data.badge_text || null,
-        is_featured: data.is_featured ?? false,
-        is_best_deal: data.is_best_deal ?? false,
-        is_today_deal: data.is_today_deal ?? false,
-        is_best_seller: data.is_best_seller ?? false,
-        is_new_arrival: data.is_new_arrival ?? false,
+        is_featured: Boolean(data.is_featured),
+        is_best_deal: Boolean(data.is_best_deal),
+        is_today_deal: Boolean(data.is_today_deal),
+        is_best_seller: Boolean(data.is_best_seller),
+        is_new_arrival: Boolean(data.is_new_arrival),
         deal_ends_at: data.deal_ends_at || null,
         specifications: data.specifications || {},
-        is_active: data.is_active ?? true,
+        is_active: data.is_active !== undefined ? Boolean(data.is_active) : true,
       })
       .select("id")
       .single();
@@ -87,7 +87,8 @@ export async function createProductAction(data: ProductInputPayload) {
         is_primary: img.is_primary ?? idx === 0,
         display_order: img.display_order ?? idx + 1,
       }));
-      await supabase.from("product_images").insert(imagesToInsert);
+      const { error: imgErr } = await supabase.from("product_images").insert(imagesToInsert);
+      if (imgErr) throw imgErr;
     }
 
     // Insert Variants
@@ -100,13 +101,22 @@ export async function createProductAction(data: ProductInputPayload) {
         compare_at_price: v.compare_at_price || null,
         stock: v.stock ?? 5,
       }));
-      await supabase.from("product_variants").insert(variantsToInsert);
+      const { error: varErr } = await supabase.from("product_variants").insert(variantsToInsert);
+      if (varErr) throw varErr;
     }
 
     revalidatePath("/");
     revalidatePath("/admin");
     revalidatePath("/admin/products");
-    return { success: true, id: product.id };
+
+    // Fetch refreshed product with relations
+    const { data: createdProduct } = await supabase
+      .from("products")
+      .select("*, category:categories(*), brand:brands(*), product_images(*), product_variants(*)")
+      .eq("id", product.id)
+      .single();
+
+    return { success: true, id: product.id, data: createdProduct };
   } catch (err: unknown) {
     console.error("createProductAction error:", err);
     return { success: false, error: (err as Error).message };
@@ -125,29 +135,31 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
     if (data.slug !== undefined) updatePayload.slug = data.slug.trim();
     if (data.category_id !== undefined) updatePayload.category_id = data.category_id || null;
     if (data.brand_id !== undefined) updatePayload.brand_id = data.brand_id || null;
-    if (data.short_description !== undefined) updatePayload.short_description = data.short_description;
-    if (data.description !== undefined) updatePayload.description = data.description;
+    if (data.short_description !== undefined) updatePayload.short_description = data.short_description || null;
+    if (data.description !== undefined) updatePayload.description = data.description || null;
     if (data.price !== undefined) updatePayload.price = data.price;
     if (data.compare_at_price !== undefined) updatePayload.compare_at_price = data.compare_at_price || null;
     if (data.stock !== undefined) updatePayload.stock = data.stock;
-    if (data.warranty !== undefined) updatePayload.warranty = data.warranty;
-    if (data.free_gift !== undefined) updatePayload.free_gift = data.free_gift;
-    if (data.badge_text !== undefined) updatePayload.badge_text = data.badge_text;
-    if (data.is_featured !== undefined) updatePayload.is_featured = data.is_featured;
-    if (data.is_best_deal !== undefined) updatePayload.is_best_deal = data.is_best_deal;
-    if (data.is_today_deal !== undefined) updatePayload.is_today_deal = data.is_today_deal;
-    if (data.is_best_seller !== undefined) updatePayload.is_best_seller = data.is_best_seller;
-    if (data.is_new_arrival !== undefined) updatePayload.is_new_arrival = data.is_new_arrival;
+    if (data.warranty !== undefined) updatePayload.warranty = data.warranty || null;
+    if (data.free_gift !== undefined) updatePayload.free_gift = data.free_gift || null;
+    if (data.badge_text !== undefined) updatePayload.badge_text = data.badge_text || null;
+    if (data.is_featured !== undefined) updatePayload.is_featured = Boolean(data.is_featured);
+    if (data.is_best_deal !== undefined) updatePayload.is_best_deal = Boolean(data.is_best_deal);
+    if (data.is_today_deal !== undefined) updatePayload.is_today_deal = Boolean(data.is_today_deal);
+    if (data.is_best_seller !== undefined) updatePayload.is_best_seller = Boolean(data.is_best_seller);
+    if (data.is_new_arrival !== undefined) updatePayload.is_new_arrival = Boolean(data.is_new_arrival);
     if (data.deal_ends_at !== undefined) updatePayload.deal_ends_at = data.deal_ends_at || null;
-    if (data.specifications !== undefined) updatePayload.specifications = data.specifications;
-    if (data.is_active !== undefined) updatePayload.is_active = data.is_active;
+    if (data.specifications !== undefined) updatePayload.specifications = data.specifications || {};
+    if (data.is_active !== undefined) updatePayload.is_active = Boolean(data.is_active);
 
     const { error } = await supabase.from("products").update(updatePayload).eq("id", id);
     if (error) throw error;
 
     // Update Images if supplied
     if (data.images !== undefined) {
-      await supabase.from("product_images").delete().eq("product_id", id);
+      const { error: delImgErr } = await supabase.from("product_images").delete().eq("product_id", id);
+      if (delImgErr) throw delImgErr;
+
       if (data.images.length > 0) {
         const imagesToInsert = data.images.map((img, idx) => ({
           product_id: id,
@@ -156,13 +168,16 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
           is_primary: img.is_primary ?? idx === 0,
           display_order: img.display_order ?? idx + 1,
         }));
-        await supabase.from("product_images").insert(imagesToInsert);
+        const { error: insImgErr } = await supabase.from("product_images").insert(imagesToInsert);
+        if (insImgErr) throw insImgErr;
       }
     }
 
     // Update Variants if supplied
     if (data.variants !== undefined) {
-      await supabase.from("product_variants").delete().eq("product_id", id);
+      const { error: delVarErr } = await supabase.from("product_variants").delete().eq("product_id", id);
+      if (delVarErr) throw delVarErr;
+
       if (data.variants.length > 0) {
         const variantsToInsert = data.variants.map((v) => ({
           product_id: id,
@@ -172,7 +187,8 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
           compare_at_price: v.compare_at_price || null,
           stock: v.stock ?? 5,
         }));
-        await supabase.from("product_variants").insert(variantsToInsert);
+        const { error: insVarErr } = await supabase.from("product_variants").insert(variantsToInsert);
+        if (insVarErr) throw insVarErr;
       }
     }
 
@@ -180,7 +196,15 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
     revalidatePath(`/products/${data.slug || id}`);
     revalidatePath("/admin");
     revalidatePath("/admin/products");
-    return { success: true };
+
+    // Fetch refreshed product with relations
+    const { data: updatedProduct } = await supabase
+      .from("products")
+      .select("*, category:categories(*), brand:brands(*), product_images(*), product_variants(*)")
+      .eq("id", id)
+      .single();
+
+    return { success: true, data: updatedProduct };
   } catch (err: unknown) {
     console.error("updateProductAction error:", err);
     return { success: false, error: (err as Error).message };

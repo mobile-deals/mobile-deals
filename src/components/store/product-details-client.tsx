@@ -1,7 +1,8 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Product, ProductVariant } from "@/types/database";
 import { useCart } from "@/hooks/use-cart";
 import { generateProductWhatsAppUrl } from "@/lib/whatsapp";
@@ -15,6 +16,7 @@ import {
   CheckCircle2,
   Minus,
   Plus,
+  Check,
 } from "lucide-react";
 
 interface ProductDetailsClientProps {
@@ -31,17 +33,13 @@ export function ProductDetailsClient({
   const router = useRouter();
   const { addItem } = useCart();
 
-  // Selected variant state
   const variants = product.product_variants || [];
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
     variants.length > 0 ? variants[0] : null
   );
-
-  // Quantity state
   const [quantity, setQuantity] = useState(1);
   const [addedToast, setAddedToast] = useState(false);
 
-  // Price calculations
   const currentPrice = selectedVariant?.price ?? product.price;
   const comparePrice = selectedVariant?.compare_at_price ?? product.compare_at_price;
   const hasDiscount = comparePrice && comparePrice > currentPrice;
@@ -53,6 +51,13 @@ export function ProductDetailsClient({
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url ||
     "";
+
+  // Free gift data
+  const giftName = product.free_gift?.trim() || "";
+  const giftImage = product.specifications?.gift_image?.trim() || "";
+  const isGiftEnabled =
+    product.specifications?.gift_enabled !== "false" &&
+    Boolean(giftName || giftImage);
 
   const handleAddToCart = () => {
     addItem(
@@ -97,41 +102,42 @@ export function ProductDetailsClient({
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Brand & Badge */}
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-5">
+
+      {/* ── Brand + badges row ── */}
+      <div className="flex items-center flex-wrap gap-2">
         {product.brand && (
-          <span className="px-2.5 py-1 bg-neutral-100 rounded-md text-xs font-bold text-neutral-700 uppercase tracking-wider">
+          <span className="px-2.5 py-1 bg-neutral-100 rounded-lg text-xs font-bold text-neutral-600 uppercase tracking-wider">
             {product.brand.name}
           </span>
         )}
-        {product.badge_text && (
-          <span className="px-2.5 py-1 bg-[#F59E0B] text-neutral-900 rounded-md text-xs font-bold uppercase tracking-wider">
-            {product.badge_text}
+        {isGiftEnabled && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200/80 rounded-full text-xs font-black uppercase tracking-wider">
+            <Gift className="w-3.5 h-3.5 text-amber-600" />
+            {giftName || "Free Gift"}
           </span>
         )}
-        {product.free_gift && (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md text-xs font-bold">
-            <Gift className="w-3.5 h-3.5" />
-            <span>Free Gift Included</span>
+        {!isGiftEnabled && product.badge_text && (
+          <span className="px-2.5 py-1 bg-rose-50 text-[#8A1538] border border-rose-200/80 rounded-full text-xs font-bold uppercase tracking-wider">
+            {product.badge_text}
           </span>
         )}
       </div>
 
-      {/* Product Name & Short Description */}
+      {/* ── Product name + short description ── */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight leading-tight">
           {product.name}
         </h1>
         {product.short_description && (
-          <p className="text-sm text-neutral-500 mt-2 font-medium leading-relaxed">
+          <p className="text-sm text-neutral-500 mt-2 leading-relaxed">
             {product.short_description}
           </p>
         )}
       </div>
 
-      {/* Pricing Block */}
-      <div className="flex items-baseline gap-3 p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80">
+      {/* ── Pricing block ── */}
+      <div className="flex items-center gap-3 flex-wrap p-4 rounded-2xl bg-neutral-50 border border-neutral-200/60">
         <span className="text-3xl sm:text-4xl font-black text-[#8A1538] tracking-tight">
           {currency} {currentPrice.toLocaleString()}
         </span>
@@ -140,20 +146,20 @@ export function ProductDetailsClient({
             <span className="text-base text-neutral-400 line-through">
               {currency} {comparePrice.toLocaleString()}
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
+            <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">
               Save {discountPercent}%
             </span>
           </>
         )}
       </div>
 
-      {/* Variant Selection */}
+      {/* ── Variant selector ── */}
       {variants.length > 0 && (
-        <div className="space-y-2.5">
-          <label className="text-xs font-bold uppercase text-neutral-700 tracking-wider">
-            Select Model / Variant:
-          </label>
-          <div className="flex flex-wrap gap-2.5">
+        <div className="space-y-2">
+          <p className="text-xs font-bold uppercase text-neutral-500 tracking-wider">
+            Select Model / Variant
+          </p>
+          <div className="flex flex-wrap gap-2">
             {variants.map((variant) => {
               const isSelected = selectedVariant?.id === variant.id;
               return (
@@ -161,7 +167,7 @@ export function ProductDetailsClient({
                   key={variant.id}
                   type="button"
                   onClick={() => setSelectedVariant(variant)}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold border transition-all ${
                     isSelected
                       ? "border-[#8A1538] bg-[#8A1538]/5 text-[#8A1538] ring-2 ring-[#8A1538]/20"
                       : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-400"
@@ -175,27 +181,27 @@ export function ProductDetailsClient({
         </div>
       )}
 
-      {/* Quantity Selector */}
+      {/* ── Quantity ── */}
       <div className="flex items-center gap-4">
-        <span className="text-xs font-bold uppercase text-neutral-700 tracking-wider">
-          Quantity:
+        <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">
+          Quantity
         </span>
-        <div className="flex items-center border border-neutral-300 rounded-xl bg-white overflow-hidden shadow-2xs">
+        <div className="flex items-center border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-xs">
           <button
             type="button"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="p-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
             aria-label="Decrease quantity"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>
-          <span className="w-12 text-center font-bold text-sm text-neutral-900">
+          <span className="w-10 text-center font-bold text-sm text-neutral-900">
             {quantity}
           </span>
           <button
             type="button"
             onClick={() => setQuantity((q) => q + 1)}
-            className="p-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
             aria-label="Increase quantity"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -203,72 +209,103 @@ export function ProductDetailsClient({
         </div>
       </div>
 
-      {/* Primary Action Buttons */}
-      <div className="space-y-3 pt-2">
-        {/* Add to Cart */}
+      {/* ── Action Buttons ── */}
+      <div className="grid grid-cols-1 gap-2.5">
+        {/* Add to Cart — primary */}
         <button
           type="button"
           onClick={handleAddToCart}
-          className="w-full py-3.5 px-6 rounded-2xl bg-[#8A1538] hover:bg-[#700f2c] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          className="w-full py-3.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white"
         >
-          <ShoppingCart className="w-5 h-5" />
-          <span>{addedToast ? "Added to Cart!" : "Add to Cart"}</span>
+          {addedToast ? (
+            <>
+              <Check className="w-5 h-5 text-emerald-200" />
+              <span>Added to Cart!</span>
+            </>
+          ) : (
+            <>
+              <ShoppingCart className="w-5 h-5" />
+              <span>Add to Cart</span>
+            </>
+          )}
         </button>
 
-        {/* Buy with COD Direct Checkout */}
-        <button
-          type="button"
-          onClick={handleBuyWithCOD}
-          className="w-full py-3.5 px-6 rounded-2xl bg-[#1A1A1A] hover:bg-neutral-800 text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
-        >
-          <Zap className="w-5 h-5 text-[#F59E0B]" />
-          <span>Buy with Cash on Delivery</span>
-        </button>
+        {/* COD + WhatsApp side by side */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <button
+            type="button"
+            onClick={handleBuyWithCOD}
+            className="py-3.5 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          >
+            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>Cash on Delivery</span>
+          </button>
 
-        {/* Order on WhatsApp */}
-        <a
-          href={whatsAppUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full py-3.5 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
-        >
-          <MessageCircle className="w-5 h-5 fill-white" />
-          <span>Order via WhatsApp</span>
-        </a>
+          <a
+            href={whatsAppUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#1fb855] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          >
+            <MessageCircle className="w-4 h-4 fill-white shrink-0" />
+            <span>WhatsApp</span>
+          </a>
+        </div>
       </div>
 
-      {/* Free Gift Details if set */}
-      {product.free_gift && (
-        <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200/80 flex items-start gap-3">
-          <Gift className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-xs text-amber-900">
-            <span className="font-bold">Complimentary Gift: </span>
-            <span>{product.free_gift}</span>
+      {/* ── Free Gift card ── */}
+      {isGiftEnabled && (
+        <div className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80">
+          {/* Gift image */}
+          {giftImage ? (
+            <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-white border border-amber-100 shadow-xs">
+              <Image
+                src={giftImage}
+                alt={giftName || "Free Gift"}
+                fill
+                sizes="64px"
+                className="object-contain p-1"
+              />
+            </div>
+          ) : (
+            <div className="w-14 h-14 shrink-0 rounded-xl bg-amber-100 flex items-center justify-center">
+              <Gift className="w-7 h-7 text-amber-600" />
+            </div>
+          )}
+          {/* Gift info */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Gift className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-amber-700">
+                Free Gift Included
+              </span>
+            </div>
+            {giftName && (
+              <p className="text-sm font-bold text-neutral-900 truncate">{giftName}</p>
+            )}
+            <p className="text-xs text-emerald-700 font-semibold mt-0.5">
+              ✓ Complimentary with this product
+            </p>
           </div>
         </div>
       )}
 
-      {/* Trust & Guarantees Box */}
-      <div className="p-4 rounded-2xl bg-neutral-50 border border-neutral-200/80 space-y-2.5 text-xs text-neutral-600">
-        <div className="flex items-center gap-2.5">
+      {/* ── Trust bar ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-neutral-600">
+        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
           <Truck className="w-4 h-4 text-[#8A1538] shrink-0" />
-          <span>
-            <strong>Free Express Delivery</strong> anywhere in Qatar (24–48 hours)
-          </span>
+          <span><strong>Free Delivery</strong><br className="hidden sm:block" /> 24–48 hrs Qatar</span>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
           <ShieldCheck className="w-4 h-4 text-[#8A1538] shrink-0" />
-          <span>
-            <strong>Warranty:</strong> {product.warranty || "1 Year Official Qatar Warranty"}
-          </span>
+          <span><strong>Warranty</strong><br className="hidden sm:block" /> {product.warranty || "1 Year Official"}</span>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>
-            <strong>100% Genuine:</strong> Sealed original unit with verification
-          </span>
+          <span><strong>100% Genuine</strong><br className="hidden sm:block" /> Sealed original unit</span>
         </div>
       </div>
+
     </div>
   );
 }
