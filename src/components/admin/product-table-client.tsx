@@ -31,14 +31,46 @@ export function ProductTableClient({
   categories,
   brands,
 }: ProductTableClientProps) {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
   const [badgeFilter, setBadgeFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"newest" | "price-asc" | "price-desc" | "stock-asc">("newest");
 
+  // Keep state in sync with server changes
+  React.useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
+
+  const handleProductSaved = (saved?: Product) => {
+    if (saved) {
+      setProducts((prev) => {
+        const idx = prev.findIndex((p) => p.id === saved.id);
+        if (idx >= 0) {
+          const updated = [...prev];
+          updated[idx] = saved;
+          return updated;
+        }
+        return [saved, ...prev];
+      });
+    }
+    setEditingProduct(null);
+  };
+
+  const handleToggleActive = (id: string, newStatus: boolean) => {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, is_active: newStatus } : p))
+    );
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  };
+
   const filteredProducts = useMemo(() => {
-    return initialProducts.filter((p) => {
+    return products.filter((p) => {
       // Search term
       if (search.trim()) {
         const q = search.toLowerCase();
@@ -71,7 +103,7 @@ export function ProductTableClient({
       if (sortBy === "stock-asc") return Number(a.stock) - Number(b.stock);
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
-  }, [initialProducts, search, selectedCategory, stockFilter, badgeFilter, sortBy]);
+  }, [products, search, selectedCategory, stockFilter, badgeFilter, sortBy]);
 
   return (
     <div className="space-y-4">
@@ -131,7 +163,7 @@ export function ProductTableClient({
       {/* Results Count & Badges Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-neutral-400 px-1">
         <div className="flex items-center gap-2">
-          <span>Showing <strong className="text-white">{filteredProducts.length}</strong> of {initialProducts.length} items</span>
+          <span>Showing <strong className="text-white">{filteredProducts.length}</strong> of {products.length} items</span>
         </div>
 
         {/* Quick Filter Pills */}
@@ -318,24 +350,20 @@ export function ProductTableClient({
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <ProductForm
-                            product={prod}
-                            categories={categories}
-                            brands={brands}
-                            trigger={
-                              <button
-                                type="button"
-                                className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-bold transition-colors"
-                              >
-                                Edit
-                              </button>
-                            }
-                          />
+                          <button
+                            type="button"
+                            onClick={() => setEditingProduct(prod)}
+                            className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-white text-[11px] font-bold transition-colors cursor-pointer"
+                          >
+                            Edit
+                          </button>
 
                           <ProductActions
                             id={prod.id}
                             slug={prod.slug}
                             isActive={prod.is_active}
+                            onToggleSuccess={(newStatus) => handleToggleActive(prod.id, newStatus)}
+                            onDeleteSuccess={(id) => handleDeleteProduct(id)}
                           />
                         </div>
                       </td>
@@ -347,6 +375,18 @@ export function ProductTableClient({
           </div>
         )}
       </div>
+
+      {/* Single Edit Modal */}
+      {editingProduct && (
+        <ProductForm
+          isOpen={Boolean(editingProduct)}
+          product={editingProduct}
+          categories={categories}
+          brands={brands}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={handleProductSaved}
+        />
+      )}
     </div>
   );
 }

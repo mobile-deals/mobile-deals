@@ -18,7 +18,7 @@ export function ProductGallery({ images = [], productName }: ProductGalleryProps
   return (
     <div className="flex flex-col gap-4">
       {/* Main Image Viewport */}
-      <div className="relative w-full aspect-square bg-white rounded-3xl border border-neutral-200/80 p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-xs">
+      <div className="relative w-full aspect-square bg-neutral-50/60 rounded-3xl flex items-center justify-center overflow-hidden">
         {activeImage ? (
           <Image
             src={getOptimizedImageUrl(activeImage, "detail")}
@@ -26,7 +26,7 @@ export function ProductGallery({ images = [], productName }: ProductGalleryProps
             fill
             priority
             sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-contain p-4 transition-all duration-300"
+            className="object-contain p-2 transition-all duration-300"
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-neutral-300">

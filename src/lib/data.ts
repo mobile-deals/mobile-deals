@@ -91,7 +91,7 @@ export async function getTodayDeals(): Promise<Product[]> {
         `
         id, name, slug, short_description, price, compare_at_price, stock,
         warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
-        is_best_seller, deal_ends_at, is_active,
+        is_best_seller, deal_ends_at, is_active, specifications,
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )
@@ -125,7 +125,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
         `
         id, name, slug, short_description, price, compare_at_price, stock,
         warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
-        is_best_seller, deal_ends_at, is_active,
+        is_best_seller, deal_ends_at, is_active, specifications,
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )
@@ -206,7 +206,7 @@ export async function getProductsByCategory(categorySlug: string): Promise<{
         `
         id, name, slug, short_description, price, compare_at_price, stock,
         warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
-        is_best_seller, deal_ends_at, is_active,
+        is_best_seller, deal_ends_at, is_active, specifications,
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )
@@ -241,7 +241,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
       .select(
         `
         id, name, slug, short_description, price, compare_at_price, stock,
-        warranty, free_gift, badge_text, is_active,
+        warranty, free_gift, badge_text, is_active, specifications,
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )

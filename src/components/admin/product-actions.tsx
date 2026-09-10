@@ -14,6 +14,8 @@ interface ProductActionsProps {
   slug?: string;
   isActive: boolean;
   productName?: string;
+  onToggleSuccess?: (newStatus: boolean) => void;
+  onDeleteSuccess?: (id: string) => void;
 }
 
 export function ProductActions({
@@ -21,6 +23,8 @@ export function ProductActions({
   productId,
   isActive,
   productName,
+  onToggleSuccess,
+  onDeleteSuccess,
 }: ProductActionsProps) {
   const targetId = id || productId || "";
   const router = useRouter();
@@ -29,8 +33,11 @@ export function ProductActions({
   const handleToggle = async () => {
     if (!targetId) return;
     setLoading(true);
-    await toggleProductActiveAction(targetId, isActive);
-    router.refresh();
+    const res = await toggleProductActiveAction(targetId, isActive);
+    if (res.success) {
+      if (onToggleSuccess) onToggleSuccess(!isActive);
+      router.refresh();
+    }
     setLoading(false);
   };
 
@@ -40,8 +47,11 @@ export function ProductActions({
       return;
     }
     setLoading(true);
-    await deleteProductAction(targetId);
-    router.refresh();
+    const res = await deleteProductAction(targetId);
+    if (res.success) {
+      if (onDeleteSuccess) onDeleteSuccess(targetId);
+      router.refresh();
+    }
     setLoading(false);
   };
 

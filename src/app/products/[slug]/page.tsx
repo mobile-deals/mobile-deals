@@ -82,7 +82,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     },
   };
 
-  const specs = (product.specifications || {}) as Record<string, string>;
+  // Filter out internal gift/admin keys from the public-facing specs table
+  const INTERNAL_SPEC_KEYS = new Set(["gift_enabled", "gift_image"]);
+  const specs = Object.fromEntries(
+    Object.entries((product.specifications || {}) as Record<string, string>).filter(
+      ([key]) => !INTERNAL_SPEC_KEYS.has(key)
+    )
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -154,6 +160,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <div className="prose prose-neutral text-sm text-neutral-600 leading-relaxed max-w-none">
               {product.description ? (
                 <p className="whitespace-pre-line">{product.description}</p>
+              ) : product.short_description ? (
+                <p className="whitespace-pre-line">{product.short_description}</p>
               ) : (
                 <p>
                   Genuine {product.name} available with fast doorstep delivery across Qatar.

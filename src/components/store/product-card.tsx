@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Product } from "@/types/database";
-import { Heart, ShoppingCart, Check } from "lucide-react";
+import { Heart, ShoppingCart, Check, Gift, Sparkles } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { getOptimizedImageUrl } from "@/lib/cloudinary";
@@ -27,13 +27,34 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
   const optimizedImgUrl = getOptimizedImageUrl(primaryImage, "card");
   const inWishlist = isInWishlist(product.id);
 
-  // Determine badge text
-  let badge = product.badge_text;
-  if (!badge) {
-    if (product.free_gift) badge = "Free Gift";
-    else if (product.is_best_seller) badge = "Best Seller";
-    else if (product.is_today_deal) badge = "Deal";
-    else if (product.is_new_arrival) badge = "New";
+  // Free Gift Promotion Data
+  const giftImage = product.specifications?.gift_image?.trim() || "";
+  const giftName = product.free_gift?.trim() || "";
+  const isGiftEnabled =
+    product.specifications?.gift_enabled !== "false" &&
+    Boolean(giftName || giftImage);
+
+  // Filter out badge_text if it is accidentally set to the gift name or gift keyword
+  const badgeIsGift =
+    Boolean(product.badge_text?.toLowerCase().includes("gift")) ||
+    (giftName &&
+      product.badge_text?.toLowerCase().trim() === giftName.toLowerCase().trim()) ||
+    (giftName &&
+      product.badge_text &&
+      giftName.toLowerCase().includes(product.badge_text.toLowerCase().trim()));
+
+  let topBadge: { text: string; variant: "discount" | "deal" | "new" | "default" } | null = null;
+
+  if (product.is_today_deal) {
+    topBadge = { text: "TODAY DEAL", variant: "deal" };
+  } else if (product.is_best_deal) {
+    topBadge = { text: "BEST DEAL", variant: "deal" };
+  } else if (product.is_best_seller) {
+    topBadge = { text: "BEST SELLER", variant: "default" };
+  } else if (product.is_new_arrival) {
+    topBadge = { text: "NEW ARRIVAL", variant: "new" };
+  } else if (product.badge_text?.trim() && !badgeIsGift) {
+    topBadge = { text: product.badge_text.trim(), variant: "default" };
   }
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -57,97 +78,141 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col justify-between rounded-2xl bg-white border border-neutral-200/90 shadow-2xs hover:shadow-lg hover:border-[#8A1538]/30 transition-all p-3.5 sm:p-4">
-      {/* Top Header: Badge + Wishlist */}
-      <div className="flex items-center justify-between mb-2 z-10">
-        <div>
-          {badge ? (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-[#F59E0B] text-neutral-900 text-[10px] font-bold uppercase tracking-wider shadow-2xs">
-              {badge}
-            </span>
-          ) : (
-            <span className="h-4" />
-          )}
-        </div>
+    <div className="group relative flex flex-col rounded-2xl sm:rounded-3xl bg-white border border-neutral-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] hover:border-[#8A1538]/25 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
 
-        <button
-          type="button"
-          onClick={handleWishlistClick}
-          className={`p-1.5 rounded-full transition-colors ${
-            inWishlist
-              ? "text-[#8A1538] bg-rose-50"
-              : "text-neutral-400 hover:text-[#8A1538] hover:bg-neutral-50"
-          }`}
-          aria-label="Toggle Wishlist"
-        >
-          <Heart className={`w-4 h-4 ${inWishlist ? "fill-current" : ""}`} />
-        </button>
-      </div>
-
-      {/* Product Image */}
-      <Link href={`/products/${product.slug}`} className="block relative mb-3">
-        <div className="relative w-full aspect-square bg-white rounded-xl flex items-center justify-center overflow-hidden p-2">
+      {/* ── Image area with overlaid badge & wishlist ── */}
+      <Link href={`/products/${product.slug}`} className="block relative">
+        <div className="relative w-full aspect-square bg-gradient-to-b from-neutral-50/80 via-white to-neutral-50/40">
           {primaryImage ? (
             <Image
               src={optimizedImgUrl}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 180px, (max-width: 1024px) 240px, 280px"
-              className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+              sizes="(max-width: 640px) 180px, (max-width: 1024px) 260px, 300px"
+              className="object-contain p-3 group-hover:scale-105 transition-transform duration-300 ease-out"
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-neutral-300 bg-neutral-50 rounded-lg">
-              <span className="text-3xl">📱</span>
+            <div className="w-full h-full flex items-center justify-center text-neutral-300">
+              <span className="text-4xl">📱</span>
+            </div>
+          )}
+
+          {/* Deal Badge — top-left overlay on image */}
+          {topBadge && (
+            <span
+              className={`absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-sm ${
+                topBadge.variant === "discount"
+                  ? "bg-rose-50 text-[#8A1538] border border-rose-200/80"
+                  : topBadge.variant === "deal"
+                  ? "bg-amber-50 text-amber-800 border border-amber-200/80"
+                  : topBadge.variant === "new"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200/80"
+                  : "bg-neutral-100 text-neutral-800 border border-neutral-200"
+              }`}
+            >
+              {topBadge.variant === "deal" && <Sparkles className="w-2.5 h-2.5" />}
+              {topBadge.text}
+            </span>
+          )}
+
+          {/* Wishlist — top-right overlay on image */}
+          <button
+            type="button"
+            onClick={handleWishlistClick}
+            className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-sm ${
+              inWishlist
+                ? "text-[#8A1538] bg-white shadow-rose-100"
+                : "text-neutral-400 bg-white/80 hover:text-[#8A1538] hover:bg-white hover:scale-105"
+            }`}
+            aria-label="Toggle Wishlist"
+          >
+            <Heart className={`w-3.5 h-3.5 ${inWishlist ? "fill-current" : ""}`} />
+          </button>
+
+          {/* Free Gift badge — bottom-right overlay on image (takes no block space) */}
+          {isGiftEnabled && (
+            <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-full px-1.5 py-0.5 shadow-sm">
+              {giftImage ? (
+                <div className="relative w-4 h-4 shrink-0 overflow-hidden rounded-full">
+                  <Image
+                    src={giftImage}
+                    alt={giftName || "Free Gift"}
+                    fill
+                    sizes="16px"
+                    className="object-contain"
+                    loading="lazy"
+                  />
+                </div>
+              ) : (
+                <Gift className="w-3 h-3 text-amber-500 shrink-0" />
+              )}
+              <span className="text-[8px] font-black text-amber-700 uppercase tracking-wide leading-none">
+                Free Gift
+              </span>
             </div>
           )}
         </div>
       </Link>
 
-      {/* Product Information */}
-      <div className="flex-1 flex flex-col justify-between pt-1">
-        <div>
-          <Link href={`/products/${product.slug}`} className="block group-hover:text-[#8A1538] transition-colors">
-            <h3 className="text-xs sm:text-sm font-bold text-neutral-900 line-clamp-2 leading-snug">
-              {product.name}
-            </h3>
-          </Link>
+      {/* ── Card body — always same structure regardless of gift ── */}
+      <div className="flex flex-col flex-1 p-3 sm:p-4">
+        {/* Brand */}
+        {product.brand?.name && (
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-0.5">
+            {product.brand.name}
+          </div>
+        )}
 
-          {product.short_description && (
-            <p className="text-[11px] text-neutral-500 line-clamp-1 mt-1 font-medium">
-              {product.short_description}
-            </p>
-          )}
-        </div>
+        {/* Title */}
+        <Link
+          href={`/products/${product.slug}`}
+          className="block group-hover:text-[#8A1538] transition-colors mb-1"
+        >
+          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 line-clamp-2 leading-snug">
+            {product.name}
+          </h3>
+        </Link>
+
+        {/* Short specs */}
+        {product.short_description && (
+          <p className="text-[10px] sm:text-xs text-neutral-500 line-clamp-1 font-normal mb-2">
+            {product.short_description}
+          </p>
+        )}
+
+        {/* Spacer pushes price + button to bottom */}
+        <div className="flex-1" />
 
         {/* Pricing */}
-        <div className="mt-2.5 mb-3 flex items-baseline gap-2">
+        <div className="flex items-baseline gap-1.5 flex-wrap mb-3">
           <span className="text-sm sm:text-base font-black text-[#8A1538] tracking-tight">
             {currency} {product.price.toLocaleString()}
           </span>
-          {product.compare_at_price && product.compare_at_price > product.price && (
-            <span className="text-xs text-neutral-400 line-through">
-              {currency} {product.compare_at_price.toLocaleString()}
-            </span>
-          )}
+          {product.compare_at_price &&
+            product.compare_at_price > product.price && (
+              <span className="text-[10px] sm:text-xs text-neutral-400 line-through">
+                {currency} {product.compare_at_price.toLocaleString()}
+              </span>
+            )}
         </div>
 
-        {/* Add to Cart Button */}
+        {/* Add to Cart */}
         <button
           type="button"
           onClick={handleAddToCart}
           disabled={product.stock <= 0}
-          className={`w-full py-2 sm:py-2.5 px-3 rounded-xl font-semibold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-2xs ${
+          className={`w-full py-2 sm:py-2.5 px-3 rounded-xl font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm ${
             product.stock <= 0
-              ? "bg-neutral-200 text-neutral-500 cursor-not-allowed"
+              ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
               : added
               ? "bg-emerald-700 text-white"
-              : "bg-[#8A1538] hover:bg-[#720e2c] text-white active:scale-98"
+              : "bg-[#8A1538] hover:bg-[#720e2c] text-white active:scale-[0.98] hover:shadow-md cursor-pointer"
           }`}
         >
           {added ? (
             <>
-              <Check className="w-3.5 h-3.5" />
+              <Check className="w-3.5 h-3.5 text-emerald-100" />
               <span>Added!</span>
             </>
           ) : product.stock <= 0 ? (
@@ -155,8 +220,7 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
           ) : (
             <>
               <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">Add to Cart</span>
-              <span className="sm:hidden">Add</span>
+              <span>Add to Cart</span>
             </>
           )}
         </button>
