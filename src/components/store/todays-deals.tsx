@@ -28,8 +28,8 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
 
   const formatDigit = (num: number) => String(num).padStart(2, "0");
 
-  const visibleProducts = products.slice(0, 6);
-  const hasMore = products.length > 6;
+  const visibleProducts = products.slice(0, 10);
+  const hasMore = products.length > 10;
 
   return (
     <section id="deals" className="py-6 sm:py-10 md:py-12 bg-neutral-50/60 border-t border-b border-neutral-200/60">
@@ -54,7 +54,7 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
               </div>
             </div>
             <Link
-              href="/search?q=best+deal"
+              href="/products"
               className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#8A1538] hover:text-[#6e102c] transition-all group"
             >
               <span>View All</span>
@@ -80,21 +80,23 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
         ) : (
           <div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-              {visibleProducts.map((prod) => (
-                <ProductCard key={prod.id} product={prod} currency={currency} />
+              {visibleProducts.map((prod, idx) => (
+                // On mobile: only show first 6 cards; on sm+ show all
+                <div key={prod.id} className={idx >= 6 ? "hidden sm:block" : ""}>
+                  <ProductCard product={prod} currency={currency} />
+                </div>
               ))}
             </div>
-            {hasMore && (
-              <div className="mt-5 flex justify-center sm:hidden">
-                <Link
-                  href="/search?q=best+deal"
-                  className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#8A1538] text-white text-sm font-bold rounded-xl shadow hover:bg-[#720e2c] active:scale-95 transition-all"
-                >
-                  <span>View All Deals</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
+            {/* Mobile "View All" — always visible so users can reach the full listing */}
+            <div className="mt-5 flex justify-center sm:hidden">
+              <Link
+                href="/products"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#8A1538] text-white text-sm font-bold rounded-xl shadow hover:bg-[#720e2c] active:scale-95 transition-all"
+              >
+                <span>View All Deals</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         )}
       </div>

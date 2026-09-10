@@ -148,6 +148,73 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 }
 
 /**
+ * Fetch Best Deal products only (is_best_deal = true), max 10.
+ */
+export async function getBestDeals(): Promise<Product[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        `
+        id, name, slug, short_description, price, compare_at_price, stock,
+        warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
+        is_best_seller, deal_ends_at, is_active, specifications,
+        product_images (
+          id, image_url, alt_text, is_primary, display_order
+        )
+      `
+      )
+      .eq("is_active", true)
+      .eq("is_best_deal", true)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) {
+      return [];
+    }
+
+    return (data as unknown as Product[]) || [];
+  } catch (err) {
+    console.warn("Could not fetch best deals:", err);
+    return [];
+  }
+}
+
+/**
+ * Fetch all active products for the all-products listing page, max 100.
+ */
+export async function getAllProducts(): Promise<Product[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(
+        `
+        id, name, slug, short_description, price, compare_at_price, stock,
+        warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
+        is_best_seller, deal_ends_at, is_active, specifications,
+        product_images (
+          id, image_url, alt_text, is_primary, display_order
+        )
+      `
+      )
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      return [];
+    }
+
+    return (data as unknown as Product[]) || [];
+  } catch (err) {
+    console.warn("Could not fetch all products:", err);
+    return [];
+  }
+}
+
+/**
  * Fetch a single product by slug with all images, variants, and brand.
  */
 export async function getProductBySlug(slug: string): Promise<Product | null> {

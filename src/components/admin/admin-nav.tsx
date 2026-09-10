@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   ShieldCheck,
+  Wrench,
 } from "lucide-react";
 
 export function AdminNav({ children }: { children: React.ReactNode }) {
@@ -36,6 +37,7 @@ export function AdminNav({ children }: { children: React.ReactNode }) {
     { label: "Brands", href: "/admin/brands", icon: Sparkles },
     { label: "Hero Banners", href: "/admin/banners", icon: ImageIcon },
     { label: "COD Orders", href: "/admin/orders", icon: ShoppingBag },
+    { label: "Service Enquiries", href: "/admin/service-enquiries", icon: Wrench },
     { label: "Site Settings", href: "/admin/settings", icon: Settings },
   ];
 

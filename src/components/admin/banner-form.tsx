@@ -237,39 +237,99 @@ export function BannerForm({
               <div className="space-y-3 pt-2 border-t border-neutral-800/80">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-neutral-300 text-xs">
-                    Link &amp; Action Buttons (Optional)
+                    Link &amp; Action Button (Optional)
                   </span>
+                  <span className="text-[10px] text-neutral-500">
+                    Configure banner CTA or destination
+                  </span>
+                </div>
+
+                {/* Action Type Selector */}
+                <div className="space-y-1">
+                  <label className="font-semibold text-neutral-400 block text-xs">
+                    Action Type / Destination
+                  </label>
+                  <select
+                    value={
+                      primaryCtaLink === "/service-enquiry"
+                        ? "service_enquiry"
+                        : primaryCtaLink === "/#deals"
+                        ? "deals"
+                        : primaryCtaLink === "/#categories"
+                        ? "categories"
+                        : primaryCtaLink === "/products"
+                        ? "products"
+                        : primaryCtaLink
+                        ? "custom"
+                        : "none"
+                    }
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "service_enquiry") {
+                        setPrimaryCtaLink("/service-enquiry");
+                        if (!primaryCtaText || primaryCtaText === "Shop Now" || primaryCtaText === "Explore Deals" || primaryCtaText === "Browse Categories") {
+                          setPrimaryCtaText("Service Enquiry");
+                        }
+                      } else if (val === "deals") {
+                        setPrimaryCtaLink("/#deals");
+                        if (!primaryCtaText || primaryCtaText === "Service Enquiry") {
+                          setPrimaryCtaText("Explore Deals");
+                        }
+                      } else if (val === "categories") {
+                        setPrimaryCtaLink("/#categories");
+                        if (!primaryCtaText || primaryCtaText === "Service Enquiry") {
+                          setPrimaryCtaText("Browse Categories");
+                        }
+                      } else if (val === "products") {
+                        setPrimaryCtaLink("/products");
+                        if (!primaryCtaText || primaryCtaText === "Service Enquiry") {
+                          setPrimaryCtaText("Shop All Products");
+                        }
+                      } else if (val === "none") {
+                        setPrimaryCtaLink("");
+                        setPrimaryCtaText("");
+                      }
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white focus:outline-none focus:border-[#8A1538] text-xs cursor-pointer"
+                  >
+                    <option value="none">No Action / Pure Graphic</option>
+                    <option value="service_enquiry">🛠️ Service Enquiry Form (/service-enquiry)</option>
+                    <option value="deals">🔥 Best Deals Section (/#deals)</option>
+                    <option value="categories">📦 Categories (/#categories)</option>
+                    <option value="products">🛍️ All Products Page (/products)</option>
+                    <option value="custom">🔗 Custom Link / URL</option>
+                  </select>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
                     <label className="font-semibold text-neutral-400 block text-xs">
-                      Primary Button Text (Optional)
+                      Button Text (Optional)
                     </label>
                     <input
                       type="text"
                       value={primaryCtaText}
                       onChange={(e) => setPrimaryCtaText(e.target.value)}
-                      placeholder="e.g. Shop Now"
+                      placeholder="e.g. Service Enquiry or Shop Now"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#8A1538]"
                     />
                   </div>
 
                   <div className="space-y-1">
                     <label className="font-semibold text-neutral-400 block text-xs">
-                      Destination URL (Optional)
+                      Destination URL
                     </label>
                     <input
                       type="text"
                       value={primaryCtaLink}
                       onChange={(e) => setPrimaryCtaLink(e.target.value)}
-                      placeholder="e.g. /#deals or /category/phones"
+                      placeholder="e.g. /service-enquiry or /#deals"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#8A1538]"
                     />
                   </div>
                 </div>
                 <p className="text-[10px] text-neutral-500 italic">
-                  Tip: If button text is left blank but a destination URL is provided, the entire banner image will be clickable to that URL.
+                  Tip: When Button Text is provided, an interactive CTA button will be displayed on the banner. If Button Text is left blank, the entire banner image will link to the Destination URL.
                 </p>
               </div>
 

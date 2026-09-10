@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import Link from "next/link";
@@ -101,7 +101,7 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
           {/* Deal Badge — top-left overlay on image */}
           {topBadge && (
             <span
-              className={`absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-black tracking-wider uppercase shadow-sm ${
+              className={`absolute top-2 left-2 z-10 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] sm:text-[9px] font-black tracking-wider uppercase shadow-sm ${
                 topBadge.variant === "discount"
                   ? "bg-rose-50 text-[#8A1538] border border-rose-200/80"
                   : topBadge.variant === "deal"
@@ -111,7 +111,7 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
                   : "bg-neutral-100 text-neutral-800 border border-neutral-200"
               }`}
             >
-              {topBadge.variant === "deal" && <Sparkles className="w-2.5 h-2.5" />}
+              {topBadge.variant === "deal" && <Sparkles className="w-2 h-2" />}
               {topBadge.text}
             </span>
           )}

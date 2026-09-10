@@ -215,3 +215,31 @@ CREATE POLICY "Allow all order_items" ON public.order_items FOR ALL USING (true)
 -- Allow all operations for site settings
 DROP POLICY IF EXISTS "Allow all settings" ON public.site_settings;
 CREATE POLICY "Allow all settings" ON public.site_settings FOR ALL USING (true) WITH CHECK (true);
+
+-- 11. SERVICE ENQUIRIES (Support & Repair Requests)
+CREATE TABLE IF NOT EXISTS public.service_enquiries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reference_no TEXT UNIQUE NOT NULL,
+    customer_name TEXT NOT NULL,
+    customer_phone TEXT NOT NULL,
+    customer_email TEXT,
+    preferred_contact TEXT DEFAULT 'WhatsApp',
+    service_type TEXT NOT NULL,
+    product_name TEXT NOT NULL,
+    product_model TEXT,
+    issue_description TEXT NOT NULL,
+    additional_details TEXT,
+    status TEXT DEFAULT 'pending',
+    admin_notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_service_enquiries_ref ON public.service_enquiries(reference_no);
+CREATE INDEX IF NOT EXISTS idx_service_enquiries_status ON public.service_enquiries(status);
+CREATE INDEX IF NOT EXISTS idx_service_enquiries_created ON public.service_enquiries(created_at DESC);
+
+ALTER TABLE public.service_enquiries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow all service_enquiries" ON public.service_enquiries;
+CREATE POLICY "Allow all service_enquiries" ON public.service_enquiries FOR ALL USING (true) WITH CHECK (true);
+

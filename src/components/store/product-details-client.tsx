@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -181,57 +181,56 @@ export function ProductDetailsClient({
         </div>
       )}
 
-      {/* ── Quantity ── */}
-      <div className="flex items-center gap-4">
-        <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">
-          Quantity
-        </span>
-        <div className="flex items-center border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-xs">
+      {/* ── Quantity + Add to Cart — same row ── */}
+      <div className="space-y-2">
+        <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">Quantity</span>
+        <div className="flex items-center gap-3">
+          {/* Stepper */}
+          <div className="flex items-center border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-xs shrink-0">
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+              aria-label="Decrease quantity"
+            >
+              <Minus className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-10 text-center font-bold text-sm text-neutral-900">
+              {quantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => q + 1)}
+              className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+              aria-label="Increase quantity"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Add to Cart — fills remaining width */}
           <button
             type="button"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
-            aria-label="Decrease quantity"
+            onClick={handleAddToCart}
+            className="flex-1 py-2.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white"
           >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <span className="w-10 text-center font-bold text-sm text-neutral-900">
-            {quantity}
-          </span>
-          <button
-            type="button"
-            onClick={() => setQuantity((q) => q + 1)}
-            className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
-            aria-label="Increase quantity"
-          >
-            <Plus className="w-3.5 h-3.5" />
+            {addedToast ? (
+              <>
+                <Check className="w-5 h-5 text-emerald-200" />
+                <span>Added to Cart!</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-5 h-5" />
+                <span>Add to Cart</span>
+              </>
+            )}
           </button>
         </div>
       </div>
 
-      {/* ── Action Buttons ── */}
-      <div className="grid grid-cols-1 gap-2.5">
-        {/* Add to Cart — primary */}
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          className="w-full py-3.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white"
-        >
-          {addedToast ? (
-            <>
-              <Check className="w-5 h-5 text-emerald-200" />
-              <span>Added to Cart!</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-5 h-5" />
-              <span>Add to Cart</span>
-            </>
-          )}
-        </button>
-
-        {/* COD + WhatsApp side by side */}
-        <div className="grid grid-cols-2 gap-2.5">
+      {/* ── COD + WhatsApp side by side ── */}
+      <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={handleBuyWithCOD}
@@ -251,7 +250,6 @@ export function ProductDetailsClient({
             <span>WhatsApp</span>
           </a>
         </div>
-      </div>
 
       {/* ── Free Gift card ── */}
       {isGiftEnabled && (

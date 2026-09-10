@@ -764,3 +764,102 @@ export async function seedInitialDataAction() {
     return { success: false, error: (err as Error).message };
   }
 }
+
+/* ======================================================================
+   SERVICE ENQUIRY ACTIONS
+   ====================================================================== */
+
+export async function createServiceEnquiryAction(data: {
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  preferred_contact?: string;
+  service_type: string;
+  product_name: string;
+  product_model?: string | null;
+  issue_description: string;
+  additional_details?: string | null;
+}) {
+  try {
+    const supabase = createAdminClient();
+    const randomDigits = Math.floor(100000 + Math.random() * 900000);
+    const referenceNo = `MD-SRV-${randomDigits}`;
+
+    const { data: inserted, error } = await supabase
+      .from("service_enquiries")
+      .insert({
+        reference_no: referenceNo,
+        customer_name: data.customer_name.trim(),
+        customer_phone: data.customer_phone.trim(),
+        customer_email: data.customer_email?.trim() || null,
+        preferred_contact: data.preferred_contact || "WhatsApp",
+        service_type: data.service_type,
+        product_name: data.product_name.trim(),
+        product_model: data.product_model?.trim() || null,
+        issue_description: data.issue_description.trim(),
+        additional_details: data.additional_details?.trim() || null,
+        status: "pending",
+      })
+      .select("id, reference_no")
+      .single();
+
+    if (error) {
+      console.warn("Could not insert service enquiry to DB:", error.message);
+      // Return reference number even if DB fails so user flow is not interrupted
+      return { success: false, referenceNo, error: error.message };
+    }
+
+    revalidatePath("/admin/service-enquiries");
+    return { success: true, referenceNo: inserted?.reference_no || referenceNo };
+  } catch (err: unknown) {
+    console.warn("Service enquiry action exception:", err);
+    return { success: false, referenceNo: `MD-SRV-${Math.floor(100000 + Math.random() * 900000)}`, error: (err as Error).message };
+  }
+}
+
+export async function updateServiceEnquiryStatusAction(
+  id: string,
+  status: string,
+  adminNotes?: string
+) {
+  try {
+    const supabase = createAdminClient();
+    const updatePayload: Record<string, unknown> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (adminNotes !== undefined) {
+      updatePayload.admin_notes = adminNotes;
+    }
+
+    const { error } = await supabase
+      .from("service_enquiries")
+      .update(updatePayload)
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/service-enquiries");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+export async function deleteServiceEnquiryAction(id: string) {
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("service_enquiries")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/admin/service-enquiries");
+    return { success: true };
+  } catch (err: unknown) {
+    return { success: false, error: (err as Error).message };
+  }
+}
+
