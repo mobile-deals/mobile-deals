@@ -2,6 +2,7 @@ import React from "react";
 import {
   getBanners,
   getCategories,
+  getBestDeals,
   getFeaturedProducts,
   getSiteSettings,
   getTodayDeals,
@@ -22,14 +23,16 @@ export const revalidate = 60; // ISR cache 60 seconds
 
 export default async function HomePage() {
   // Efficient parallel data fetching: single round-trip execution
-  const [categories, banners, todayDeals, featuredProducts, settings] =
+  const [categories, banners, bestDeals, todayDeals, featuredProducts, settings] =
     await Promise.all([
       getCategories(),
       getBanners(),
+      getBestDeals(),
       getTodayDeals(),
       getFeaturedProducts(),
       getSiteSettings(),
     ]);
+
 
   return (
     <main className="min-h-screen flex flex-col bg-white">
@@ -51,8 +54,8 @@ export default async function HomePage() {
       {/* 5. Shop by Category (Horizontal Grid) */}
       <CategoryGrid categories={categories} />
 
-      {/* 6. Today's Best Deals (Dynamic Cards + Countdown) */}
-      <TodaysDeals products={todayDeals} currency={settings.currency} />
+      {/* 6. Best Deals Section (Dynamic — only is_best_deal products, max 10) */}
+      <TodaysDeals products={bestDeals} currency={settings.currency} />
 
       {/* 7. Featured Products Collection (if any active) */}
       <FeaturedSection

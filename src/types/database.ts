@@ -165,3 +165,24 @@ export interface CartItem {
   quantity: number;
   imageUrl: string;
 }
+
+export type ServiceEnquiryStatus = "pending" | "in_progress" | "completed" | "cancelled";
+
+export interface ServiceEnquiry {
+  id: string;
+  reference_no: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email?: string | null;
+  preferred_contact: string;
+  service_type: string;
+  product_name: string;
+  product_model?: string | null;
+  issue_description: string;
+  additional_details?: string | null;
+  status: ServiceEnquiryStatus;
+  admin_notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
