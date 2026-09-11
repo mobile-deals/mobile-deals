@@ -16,9 +16,9 @@ export const metadata: Metadata = {
     "Explore our complete collection of smartphones, tablets, laptops, accessories, and exclusive Qatar deals. Filter by category, brand, price, and special offers with fast delivery across Qatar.",
 };
 
-export const revalidate = 60;
+export const revalidate = 60; // ISR cache 60 seconds
 
-export default async function AllProductsPage() {
+export default async function ShopPage() {
   const [products, categories, brands, settings] = await Promise.all([
     getAllProducts(),
     getCategories(),

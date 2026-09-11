@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, User, Heart, ShoppingCart, MessageCircle, Menu, X, ChevronRight, Sparkles, Loader2, ArrowRight, Tag } from "lucide-react";
+import { Search, User, Heart, ShoppingCart, MessageCircle, Menu, X, ChevronRight, Sparkles, Loader2, ArrowRight, Tag, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import { Logo } from "@/components/ui/logo";
 import { useCart } from "@/hooks/use-cart";
@@ -435,6 +435,17 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
                 >
                   <span>Home</span>
                   <ChevronRight className="w-4 h-4 text-neutral-400" />
+                </Link>
+                <Link
+                  href="/shop"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-[#8A1538] bg-[#8A1538]/5 hover:bg-[#8A1538]/10 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShoppingBag className="w-4 h-4 text-[#8A1538]" />
+                    <span>Shop</span>
+                  </span>
+                  <ChevronRight className="w-4 h-4 text-[#8A1538]" />
                 </Link>
                 <Link
                   href="/#categories"

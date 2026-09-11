@@ -1,5 +1,5 @@
 import { createPublicClient } from "@/lib/supabase/server";
-import { Banner, Category, Product, SiteSettings } from "@/types/database";
+import { Banner, Brand, Category, Product, SiteSettings } from "@/types/database";
 
 // Default settings if database table is not yet initialized
 export const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -182,7 +182,30 @@ export async function getBestDeals(): Promise<Product[]> {
 }
 
 /**
- * Fetch all active products for the all-products listing page, max 100.
+ * Fetch all active brands sorted by name.
+ */
+export async function getBrands(): Promise<Brand[]> {
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("brands")
+      .select("id, name, slug, logo_url, is_active")
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) {
+      return [];
+    }
+
+    return (data as Brand[]) || [];
+  } catch (err) {
+    console.warn("Could not fetch brands:", err);
+    return [];
+  }
+}
+
+/**
+ * Fetch all active products for the all-products / shop listing page, max 200.
  */
 export async function getAllProducts(): Promise<Product[]> {
   try {
@@ -193,7 +216,10 @@ export async function getAllProducts(): Promise<Product[]> {
         `
         id, name, slug, short_description, price, compare_at_price, stock,
         warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
-        is_best_seller, deal_ends_at, is_active, specifications,
+        is_best_seller, is_new_arrival, deal_ends_at, is_active, specifications,
+        category_id, brand_id,
+        category:categories (id, name, slug),
+        brand:brands (id, name, slug),
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )
@@ -201,7 +227,7 @@ export async function getAllProducts(): Promise<Product[]> {
       )
       .eq("is_active", true)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(200);
 
     if (error) {
       return [];

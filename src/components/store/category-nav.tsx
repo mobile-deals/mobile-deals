@@ -314,6 +314,19 @@ export function CategoryNav({ categories = [] }: CategoryNavProps) {
             className="flex items-center gap-1.5 overflow-x-auto no-scrollbar scroll-smooth w-full px-1 py-0.5"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
+            {/* Shop All Catalog Pill */}
+            <Link
+              href="/shop"
+              className="group inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg border border-[#8A1538]/15 bg-[#8A1538]/5 hover:bg-[#8A1538]/10 hover:shadow-2xs active:scale-95 transition-all duration-150 shrink-0"
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-md bg-[#8A1538] text-white transition-all duration-200 group-hover:scale-105 shrink-0 shadow-2xs">
+                <ShoppingBag className="w-3.5 h-3.5 text-white" strokeWidth={2.2} />
+              </span>
+              <span className="text-[12px] font-bold text-[#8A1538]">
+                Shop
+              </span>
+            </Link>
+
             {categories.length === 0 ? (
               <span className="text-neutral-400 italic text-[11px] py-1">
                 Categories managed via Admin

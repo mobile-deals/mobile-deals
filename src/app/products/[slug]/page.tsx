@@ -7,7 +7,7 @@ import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { MainNavbar } from "@/components/store/main-navbar";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { ProductDetailsClient } from "@/components/store/product-details-client";
-import { TrustBar } from "@/components/store/trust-bar";
+
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
 import { ChevronRight, Shield } from "lucide-react";
@@ -207,7 +207,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         </div>
       </main>
 
-      <TrustBar />
+
       <Footer
         whatsappNumber={settings.whatsapp_number}
         storeEmail={settings.store_email}
