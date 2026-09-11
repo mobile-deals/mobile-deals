@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, Flame, MessageCircle, ShoppingCart, LucideIcon } from "lucide-react";
+import { Home, ShoppingBag, LayoutGrid, MessageCircle, ShoppingCart, LucideIcon } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 
 interface MobileBottomNavProps {
@@ -34,16 +34,16 @@ export function MobileBottomNav({
       isActive: pathname === "/",
     },
     {
+      label: "Shop",
+      href: "/shop",
+      icon: ShoppingBag,
+      isActive: pathname.startsWith("/shop") || pathname.startsWith("/products"),
+    },
+    {
       label: "Categories",
       href: "/#categories",
       icon: LayoutGrid,
       isActive: pathname.startsWith("/categories"),
-    },
-    {
-      label: "Deals",
-      href: "/#deals",
-      icon: Flame,
-      isActive: false,
     },
     {
       label: "WhatsApp",
