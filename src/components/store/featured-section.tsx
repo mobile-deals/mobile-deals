@@ -16,33 +16,34 @@ export function FeaturedSection({
   if (products.length === 0) return null;
 
   return (
-    <section className="py-8 md:py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
+    <section className="py-6 sm:py-10 md:py-12 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#8A1538]/10 text-[#8A1538] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#8A1538]/10 text-[#8A1538] flex items-center justify-center">
               <Star className="w-4 h-4 fill-current" />
             </div>
             <div>
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-900">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-black tracking-tight text-neutral-900">
                 Featured Gear
               </h2>
-              <p className="text-xs text-neutral-500 font-medium">
+              <p className="text-xs sm:text-sm text-neutral-500 font-medium">
                 Top rated electronics and customer favorites in Qatar
               </p>
             </div>
           </div>
 
           <Link
-            href="/#deals"
-            className="group inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#8A1538] hover:text-[#6e132d] transition-colors"
+            href="/products"
+            className="group inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#8A1538] hover:text-[#6e132d] transition-colors"
           >
-            <span>Explore All</span>
+            <span>View All</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* Exact same 5-column desktop, 3-column tablet, 2-column mobile grid matching Today's Best Deals */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {products.map((prod) => (
             <ProductCard key={prod.id} product={prod} currency={currency} />
           ))}

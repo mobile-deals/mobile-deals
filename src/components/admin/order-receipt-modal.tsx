@@ -1,12 +1,23 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Order } from "@/types/database";
 import { Printer, X, FileText, CheckCircle2 } from "lucide-react";
 
 export function OrderReceiptModal({ order }: { order: Order }) {
   const [open, setOpen] = useState(false);
   const [receiptType, setReceiptType] = useState<"pos" | "a4">("pos");
+
+  // Prevent background page from scrolling while modal is open
+  useEffect(() => {
+    if (open) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [open]);
 
   const handlePrint = () => {
     window.print();

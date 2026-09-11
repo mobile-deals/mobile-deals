@@ -59,19 +59,19 @@ export function ImageUploader({
   };
 
   return (
-    <div className="space-y-2">
-      <label className="block font-bold text-neutral-300 text-xs flex items-center justify-between">
+    <div className="space-y-2.5">
+      <label className="block font-semibold text-neutral-300 text-xs flex items-center justify-between">
         <span className="flex items-center gap-1.5">
           <ImageIcon className="w-3.5 h-3.5 text-[#ff4b77]" />
           <span>{label}</span>
         </span>
-        <span className="text-[10px] text-neutral-500 font-normal">Cloudinary Media</span>
+        <span className="text-[11px] text-neutral-500 font-normal">Cloudinary Media CDN</span>
       </label>
 
       {/* Preview if image is already set */}
       {value ? (
-        <div className="relative flex items-center gap-3 p-3 rounded-2xl bg-neutral-950 border border-neutral-800">
-          <div className="relative w-16 h-16 rounded-xl bg-neutral-900 border border-neutral-800 overflow-hidden shrink-0">
+        <div className="relative flex items-center gap-3.5 p-3.5 rounded-2xl bg-neutral-900 border border-neutral-800">
+          <div className="relative w-16 h-16 rounded-xl bg-neutral-950 border border-neutral-800 overflow-hidden shrink-0">
             <Image
               src={value}
               alt="Uploaded preview"
@@ -81,8 +81,8 @@ export function ImageUploader({
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1 text-emerald-400 text-xs font-bold">
-              <CheckCircle2 className="w-3.5 h-3.5" />
+            <div className="flex items-center gap-1.5 text-emerald-400 text-xs font-bold">
+              <CheckCircle2 className="w-4 h-4" />
               <span>Image Attached</span>
             </div>
             <p className="text-[11px] text-neutral-400 font-mono truncate mt-0.5" title={value}>
@@ -92,7 +92,7 @@ export function ImageUploader({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            className="p-2 rounded-xl text-neutral-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
             title="Remove image"
           >
             <X className="w-4 h-4" />
@@ -102,10 +102,10 @@ export function ImageUploader({
         /* Upload Area */
         <div
           onClick={() => fileInputRef.current?.click()}
-          className={`cursor-pointer rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
+          className={`cursor-pointer rounded-2xl border-2 border-dashed p-5 text-center transition-all ${
             uploading
               ? "border-[#8A1538] bg-[#8A1538]/10"
-              : "border-neutral-800 bg-neutral-950 hover:border-[#8A1538] hover:bg-neutral-900"
+              : "border-neutral-800 bg-neutral-900/60 hover:border-[#8A1538] hover:bg-neutral-900"
           }`}
         >
           <input
@@ -117,36 +117,38 @@ export function ImageUploader({
           />
 
           {uploading ? (
-            <div className="space-y-2 py-2 flex flex-col items-center justify-center">
-              <Loader2 className="w-6 h-6 text-[#ff4b77] animate-spin" />
+            <div className="space-y-2 py-3 flex flex-col items-center justify-center">
+              <Loader2 className="w-7 h-7 text-[#ff4b77] animate-spin" />
               <span className="text-xs font-bold text-neutral-200">
-                Uploading to Cloudinary...
+                Uploading to Cloudinary CDN...
               </span>
             </div>
           ) : (
-            <div className="space-y-1.5 py-1 flex flex-col items-center justify-center">
-              <div className="w-9 h-9 rounded-xl bg-[#8A1538]/20 text-[#ff4b77] flex items-center justify-center">
-                <UploadCloud className="w-5 h-5" />
+            <div className="space-y-2 py-2 flex flex-col items-center justify-center">
+              <div className="w-11 h-11 rounded-2xl bg-[#8A1538]/20 text-[#ff4b77] flex items-center justify-center border border-[#8A1538]/30">
+                <UploadCloud className="w-6 h-6" />
               </div>
-              <p className="text-xs font-bold text-neutral-200">
-                Click to browse &amp; upload image
-              </p>
-              <p className="text-[10px] text-neutral-500">
-                PNG, JPG, WEBP up to 10MB
-              </p>
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-neutral-200">
+                  Click to browse &amp; upload image
+                </p>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  PNG, JPG, WEBP up to 10MB
+                </p>
+              </div>
             </div>
           )}
         </div>
       )}
 
       {/* Manual URL input fallback */}
-      <div className="pt-1">
+      <div className="pt-0.5">
         <input
           type="url"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Or paste any direct Image URL (Unsplash / Cloudinary / Web)..."
-          className="w-full px-3.5 py-2 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#8A1538]"
+          className="w-full h-10 px-3.5 rounded-xl bg-neutral-900 border border-neutral-800 text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-[#8A1538] focus:ring-1 focus:ring-[#8A1538]"
         />
       </div>
 

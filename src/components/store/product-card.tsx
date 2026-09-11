@@ -130,24 +130,29 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
             <Heart className={`w-3.5 h-3.5 ${inWishlist ? "fill-current" : ""}`} />
           </button>
 
-          {/* Free Gift badge — bottom-right overlay on image (takes no block space) */}
+          {/* Free Gift badge — bottom-right overlay on image */}
           {isGiftEnabled && (
-            <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-amber-200 rounded-full px-1.5 py-0.5 shadow-sm">
+            <div
+              className="absolute bottom-2 right-2 z-10 flex items-center gap-1.5 bg-white/95 backdrop-blur-xs border border-amber-300/90 rounded-full px-2 py-1 shadow-md hover:scale-105 transition-transform"
+              title={giftName ? `Free Gift: ${giftName}` : "Includes Free Gift"}
+            >
               {giftImage ? (
-                <div className="relative w-4 h-4 shrink-0 overflow-hidden rounded-full">
+                <div className="relative w-5 h-5 shrink-0 overflow-hidden rounded-full bg-amber-50 border border-amber-200 shadow-2xs">
                   <Image
                     src={giftImage}
                     alt={giftName || "Free Gift"}
                     fill
-                    sizes="16px"
-                    className="object-contain"
+                    sizes="20px"
+                    className="object-contain p-0.5"
                     loading="lazy"
                   />
                 </div>
               ) : (
-                <Gift className="w-3 h-3 text-amber-500 shrink-0" />
+                <div className="w-4 h-4 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                  <Gift className="w-2.5 h-2.5 text-amber-600" />
+                </div>
               )}
-              <span className="text-[8px] font-black text-amber-700 uppercase tracking-wide leading-none">
+              <span className="text-[9px] font-black text-amber-800 uppercase tracking-wide leading-none">
                 Free Gift
               </span>
             </div>

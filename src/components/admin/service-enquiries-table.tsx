@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ServiceEnquiry, ServiceEnquiryStatus } from "@/types/database";
 import {
@@ -48,6 +48,17 @@ export function ServiceEnquiriesTable({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  // Prevent background page from scrolling while enquiry details modal is open
+  useEffect(() => {
+    if (selectedEnquiry) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedEnquiry]);
 
   const openDetailsModal = (enquiry: ServiceEnquiry) => {
     setSelectedEnquiry(enquiry);
