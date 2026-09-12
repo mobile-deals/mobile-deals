@@ -42,14 +42,12 @@ export async function uploadImageServerAction(
       };
     }
 
-    // Convert file to Base64 data URI for reliable Node fetch transfer
     const arrayBuffer = await file.arrayBuffer();
-    const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = file.type || "image/jpeg";
-    const dataUri = `data:${mimeType};base64,${base64Data}`;
+    const fileBlob = new Blob([arrayBuffer], { type: mimeType });
 
     const uploadFormData = new FormData();
-    uploadFormData.append("file", dataUri);
+    uploadFormData.append("file", fileBlob, file.name || "upload.jpg");
 
     // If an upload preset is configured, use it (works unconditionally)
     if (uploadPreset) {

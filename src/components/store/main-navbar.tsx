@@ -17,6 +17,12 @@ interface SearchResultItem {
   compare_at_price: number | null;
   stock: number;
   badge_text: string | null;
+  free_gift?: string | null;
+  is_best_deal?: boolean;
+  is_today_deal?: boolean;
+  is_featured?: boolean;
+  brand?: { id: string; name: string; slug: string } | null;
+  category?: { id: string; name: string; slug: string } | null;
   product_images?: Array<{
     id: string;
     image_url: string;
@@ -33,6 +39,8 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
+  const [isRelatedResults, setIsRelatedResults] = useState(false);
+  const [directMatchCount, setDirectMatchCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [showDesktopDropdown, setShowDesktopDropdown] = useState(false);
   const [showMobileDropdown, setShowMobileDropdown] = useState(false);
@@ -44,7 +52,25 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
   const { totalItems } = useCart();
   const { totalWishlist } = useWishlist();
 
-  // Instant live search debounced fetcher
+  // Fetch 4 matching or related products from API
+  const fetchProducts = React.useCallback(async (query: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSearchResults((data.products || []).slice(0, 4));
+        setIsRelatedResults(Boolean(data.isRelated));
+        setDirectMatchCount(Number(data.directMatchCount) || 0);
+      }
+    } catch (err) {
+      console.error("Live search fetch error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Debounced search when typing
   React.useEffect(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed) {
@@ -53,23 +79,12 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
       return;
     }
 
-    setIsLoading(true);
-    const timeoutId = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setSearchResults(data.products || []);
-        }
-      } catch (err) {
-        console.error("Live search fetch error:", err);
-      } finally {
-        setIsLoading(false);
-      }
+    const timeoutId = setTimeout(() => {
+      fetchProducts(trimmed);
     }, 200);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, fetchProducts]);
 
   // Click outside to close dropdowns
   React.useEffect(() => {
@@ -103,121 +118,165 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
 
   const handleQuickTagClick = (tag: string) => {
     setSearchQuery(tag);
-    router.push(`/search?q=${encodeURIComponent(tag)}`);
-    setShowDesktopDropdown(false);
-    setShowMobileDropdown(false);
+    fetchProducts(tag);
+    setShowDesktopDropdown(true);
+    setShowMobileDropdown(true);
   };
 
   const popularTags = ["iPhone", "Samsung", "AirPods", "Charger", "Watch"];
 
   const renderSearchResultsPopup = (isMobile = false) => {
-    if (!searchQuery.trim()) return null;
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return null;
 
     return (
-      <div className={`absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-neutral-200/90 overflow-hidden z-50 animate-in fade-in zoom-in-98 duration-150 ${isMobile ? "max-h-[75vh]" : "max-h-[500px]"} flex flex-col`}>
+      <div
+        className={`absolute top-full left-0 right-0 ${
+          isMobile ? "w-full max-h-[80vh]" : "w-full max-h-[480px]"
+        } mt-1.5 bg-white rounded-2xl shadow-2xl border border-neutral-200/90 overflow-hidden z-50 animate-in fade-in zoom-in-98 duration-150 flex flex-col`}
+      >
         {/* Top Header */}
-        <div className="px-4 py-2.5 bg-neutral-50/90 border-b border-neutral-100 flex items-center justify-between text-xs text-neutral-500">
-          <span className="font-semibold text-neutral-700">
-            {isLoading ? "Searching..." : searchResults.length > 0 ? `Matching Products (${searchResults.length})` : "Search Results"}
-          </span>
-          {isLoading && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#8A1538]" />}
+        <div className="px-3.5 py-2 bg-neutral-50/90 border-b border-neutral-100 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Sparkles className="w-3.5 h-3.5 text-[#8A1538] shrink-0" />
+            <span className="font-bold text-neutral-800 truncate text-[11px] sm:text-xs">
+              {isLoading
+                ? "Searching products..."
+                : isRelatedResults && directMatchCount === 0
+                ? `Related Products for "${trimmed}"`
+                : `Related Products for "${trimmed}"`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[9px] sm:text-[10px] font-extrabold px-1.5 py-0.5 rounded-full bg-[#8A1538]/10 text-[#8A1538]">
+              {searchResults.length} Products
+            </span>
+            {isLoading && <Loader2 className="w-3 h-3 animate-spin text-[#8A1538]" />}
+          </div>
         </div>
 
-        {/* Results List or Empty State */}
-        <div className="overflow-y-auto divide-y divide-neutral-100 flex-1">
+        {/* 4 Products Showcase Grid - Compact Size */}
+        <div className="p-2.5 sm:p-3 overflow-y-auto flex-1">
           {isLoading && searchResults.length === 0 ? (
-            <div className="py-8 text-center text-xs text-neutral-400 flex flex-col items-center justify-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin text-[#8A1538]" />
-              <span>Looking for best deals...</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="animate-pulse bg-neutral-50 rounded-xl p-2 border border-neutral-100 flex flex-col justify-between h-36 sm:h-40"
+                >
+                  <div className="w-full h-18 sm:h-22 bg-neutral-200 rounded-lg mb-1.5" />
+                  <div className="h-2.5 bg-neutral-200 rounded w-3/4 mb-1" />
+                  <div className="h-2.5 bg-neutral-200 rounded w-1/2" />
+                </div>
+              ))}
             </div>
           ) : searchResults.length > 0 ? (
-            searchResults.map((product) => {
-              const primaryImg = product.product_images?.find((img) => img.is_primary)?.image_url || product.product_images?.[0]?.image_url || "/placeholder-phone.png";
-              const discountPercent = product.compare_at_price && product.compare_at_price > product.price
-                ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
-                : 0;
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+              {searchResults.slice(0, 4).map((product) => {
+                const primaryImg =
+                  product.product_images?.find((img) => img.is_primary)?.image_url ||
+                  product.product_images?.[0]?.image_url ||
+                  "/placeholder-phone.png";
+                const discountPercent =
+                  product.compare_at_price && product.compare_at_price > product.price
+                    ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
+                    : 0;
 
-              return (
-                <div
-                  key={product.id}
-                  onClick={() => handleSelectProduct(product.slug)}
-                  className="flex items-center gap-3 p-3 hover:bg-[#8A1538]/5 cursor-pointer transition-colors group"
-                >
-                  {/* Thumbnail */}
-                  <div className="relative w-12 h-12 bg-neutral-50 rounded-xl overflow-hidden shrink-0 border border-neutral-150 p-1 flex items-center justify-center">
-                    <Image
-                      src={primaryImg}
-                      alt={product.name}
-                      fill
-                      sizes="48px"
-                      className="object-contain p-1 group-hover:scale-105 transition-transform duration-200"
-                    />
-                  </div>
-
-                  {/* Title & Info */}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs sm:text-sm font-semibold text-neutral-800 group-hover:text-[#8A1538] transition-colors line-clamp-1">
-                      {product.name}
-                    </h4>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-xs font-bold text-[#8A1538]">
-                        {currency} {Number(product.price).toLocaleString()}
-                      </span>
-                      {product.compare_at_price && product.compare_at_price > product.price && (
-                        <span className="text-[10px] text-neutral-400 line-through">
-                          {currency} {Number(product.compare_at_price).toLocaleString()}
-                        </span>
-                      )}
-                      {discountPercent > 0 && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full">
+                return (
+                  <div
+                    key={product.id}
+                    onClick={() => handleSelectProduct(product.slug)}
+                    className="group relative flex flex-col justify-between p-2 rounded-xl bg-neutral-50/70 hover:bg-white border border-neutral-200/80 hover:border-[#8A1538]/40 hover:shadow-sm transition-all duration-150 cursor-pointer text-left"
+                  >
+                    {/* Compact Image Container with Badge */}
+                    <div className="relative w-full h-20 sm:h-24 bg-white rounded-lg overflow-hidden border border-neutral-100 p-1.5 flex items-center justify-center mb-1.5 shrink-0">
+                      <Image
+                        src={primaryImg}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 640px) 40vw, 120px"
+                        className="object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
+                      />
+                      {discountPercent > 0 ? (
+                        <span className="absolute top-1 left-1 bg-[#8A1538] text-white text-[8px] font-extrabold px-1 py-0.2 rounded shadow-2xs">
                           {discountPercent}% OFF
                         </span>
+                      ) : product.free_gift ? (
+                        <span className="absolute top-1 left-1 bg-amber-500 text-white text-[7px] font-extrabold px-1 py-0.2 rounded shadow-2xs">
+                          🎁 GIFT
+                        </span>
+                      ) : product.is_best_deal ? (
+                        <span className="absolute top-1 left-1 bg-amber-600 text-white text-[7px] font-extrabold px-1 py-0.2 rounded shadow-2xs">
+                          DEAL
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {/* Product Meta */}
+                    <div className="flex-1 flex flex-col justify-between min-w-0">
+                      {product.brand?.name && (
+                        <span className="text-[8px] font-bold uppercase tracking-wider text-neutral-400 mb-0.5 truncate">
+                          {product.brand.name}
+                        </span>
                       )}
+                      <h4 className="text-[11px] sm:text-xs font-bold text-neutral-800 group-hover:text-[#8A1538] transition-colors line-clamp-1 leading-snug mb-1">
+                        {product.name}
+                      </h4>
+
+                      <div className="mt-auto pt-0.5">
+                        <div className="flex items-baseline gap-1 flex-wrap">
+                          <span className="text-xs sm:text-[13px] font-black text-[#8A1538]">
+                            {currency} {Number(product.price).toLocaleString()}
+                          </span>
+                          {product.compare_at_price && product.compare_at_price > product.price && (
+                            <span className="text-[9px] text-neutral-400 line-through">
+                              {Number(product.compare_at_price).toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  {/* Right Arrow */}
-                  <ChevronRight className="w-4 h-4 text-neutral-300 group-hover:text-[#8A1538] group-hover:translate-x-0.5 transition-all shrink-0" />
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           ) : (
-            <div className="p-4 text-center">
-              <p className="text-xs text-neutral-600 font-medium">
-                No products found for &ldquo;<span className="font-semibold text-neutral-900">{searchQuery}</span>&rdquo;
-              </p>
-              <div className="mt-3">
-                <p className="text-[11px] text-neutral-400 mb-2 flex items-center justify-center gap-1">
-                  <Tag className="w-3 h-3" /> Popular Searches:
-                </p>
-                <div className="flex flex-wrap justify-center gap-1.5">
-                  {popularTags.map((tag) => (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => handleQuickTagClick(tag)}
-                      className="px-2.5 py-1 text-[11px] font-medium bg-neutral-100 hover:bg-[#8A1538]/10 hover:text-[#8A1538] text-neutral-700 rounded-full transition-colors cursor-pointer"
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="py-6 text-center text-xs text-neutral-400">
+              No products found.
             </div>
           )}
         </div>
 
-        {/* Footer Link to full search results */}
-        {searchResults.length > 0 && (
+        {/* Footer with Quick Tags & View All CTA */}
+        <div className="px-3 py-2 bg-neutral-50/90 border-t border-neutral-100 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 text-[10px] text-neutral-500">
+            <Tag className="w-3 h-3 text-[#8A1538] shrink-0" />
+            <div className="flex items-center gap-1 flex-wrap">
+              {popularTags.slice(0, 4).map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleQuickTagClick(tag);
+                  }}
+                  className="px-2 py-0.5 text-[9px] font-semibold bg-white border border-neutral-200 hover:border-[#8A1538] hover:text-[#8A1538] text-neutral-700 rounded-full transition-colors cursor-pointer"
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button
             type="button"
             onClick={handleSearchSubmit}
-            className="w-full py-2.5 px-4 bg-neutral-50 hover:bg-neutral-100 border-t border-neutral-100 text-xs font-bold text-[#8A1538] flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="text-[11px] font-bold text-[#8A1538] hover:text-[#700f2c] flex items-center gap-1 transition-colors cursor-pointer ml-auto"
           >
-            <span>View all results for &ldquo;{searchQuery}&rdquo;</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span>View all results</span>
+            <ArrowRight className="w-3 h-3" />
           </button>
-        )}
+        </div>
       </div>
     );
   };
@@ -268,7 +327,7 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
           </div>
 
           {/* Desktop Search Bar */}
-          <div ref={desktopSearchRef} className="flex flex-1 max-w-xl items-center relative">
+          <div ref={desktopSearchRef} className="flex flex-1 max-w-2xl items-center relative">
             <form
               onSubmit={handleSearchSubmit}
               className="w-full relative"

@@ -323,7 +323,8 @@ export async function getProductsByCategory(categorySlug: string): Promise<{
  * Search products by query string.
  */
 export async function searchProducts(query: string): Promise<Product[]> {
-  if (!query || query.trim().length < 2) {
+  const q = query?.trim();
+  if (!q || q.length < 1) {
     return [];
   }
 
@@ -334,17 +335,21 @@ export async function searchProducts(query: string): Promise<Product[]> {
       .select(
         `
         id, name, slug, short_description, price, compare_at_price, stock,
-        warranty, free_gift, badge_text, is_active, specifications,
+        warranty, free_gift, badge_text, is_featured, is_best_deal, is_today_deal,
+        is_best_seller, is_new_arrival, is_active, specifications,
+        category:categories (id, name, slug),
+        brand:brands (id, name, slug),
         product_images (
           id, image_url, alt_text, is_primary, display_order
         )
       `
       )
       .eq("is_active", true)
-      .ilike("name", `%${query.trim()}%`)
+      .or(`name.ilike.%${q}%,short_description.ilike.%${q}%,free_gift.ilike.%${q}%`)
       .limit(20);
 
     if (error) {
+      console.error("searchProducts error:", error);
       return [];
     }
 

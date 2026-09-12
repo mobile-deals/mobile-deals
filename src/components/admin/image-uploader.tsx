@@ -2,8 +2,8 @@
 
 import React, { useState, useRef } from "react";
 import Image from "next/image";
-import { uploadImageServerAction } from "@/app/actions/cloudinary";
-import { UploadCloud, Loader2, CheckCircle2, AlertCircle, X, Image as ImageIcon } from "lucide-react";
+import { compressImageClientSide } from "@/lib/image-compressor";
+import { UploadCloud, Loader2, CheckCircle2, AlertCircle, X, Image as ImageIcon, Sparkles } from "lucide-react";
 
 interface ImageUploaderProps {
   value: string;
@@ -19,6 +19,7 @@ export function ImageUploader({
   label = "Upload Image to Cloudinary",
 }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
+  const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,13 +29,28 @@ export function ImageUploader({
 
     setError(null);
     setUploading(true);
+    setCompressionInfo(null);
 
     try {
+      // 1. Client-side compression to lightweight WebP (saves 85-95% Cloudinary quota)
+      const compressed = await compressImageClientSide(file, 1000, 1000, 0.82);
+      
+      const compressedKb = Math.round(compressed.compressedSizeBytes / 1024);
+      if (compressed.savedPercentage > 0) {
+        setCompressionInfo(`Optimized: ${compressedKb} KB (${compressed.savedPercentage}% Cloudinary storage saved)`);
+      }
+
+      // 2. Upload lightweight compressed file to Cloudinary
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressed.file);
       formData.append("folder", folder);
 
-      const res = await uploadImageServerAction(formData);
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const res = await response.json();
 
       if (!res.success || !res.url) {
         throw new Error(
@@ -132,12 +148,20 @@ export function ImageUploader({
                 <p className="text-xs sm:text-sm font-bold text-neutral-200">
                   Click to browse &amp; upload image
                 </p>
-                <p className="text-[11px] text-neutral-500 mt-0.5">
-                  PNG, JPG, WEBP up to 10MB
+                <p className="text-[11px] text-emerald-400/90 mt-0.5 font-medium">
+                  ⚡ Auto-compressed to lightweight WebP (saves Cloudinary quota)
                 </p>
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Compression Info Badge */}
+      {compressionInfo && (
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] font-semibold animate-in fade-in duration-200">
+          <Sparkles className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+          <span>{compressionInfo}</span>
         </div>
       )}
 
