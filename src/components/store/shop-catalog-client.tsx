@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect, useTransition } from "react";
+import React, { useState, useMemo, useEffect, useRef, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Category, Brand, Product } from "@/types/database";
@@ -12,7 +12,6 @@ import {
   RotateCcw,
   Sparkles,
   Gift,
-  Flame,
   Star,
   Award,
   Tag,
@@ -20,7 +19,6 @@ import {
   ChevronDown,
   ChevronUp,
   PackageOpen,
-  ArrowUpDown,
   ShoppingBag,
   Filter,
 } from "lucide-react";
@@ -32,7 +30,15 @@ interface ShopCatalogClientProps {
   currency?: string;
 }
 
-type SortOption = "featured" | "price_asc" | "price_desc" | "discount" | "newest" | "name";
+type SortOption = "featured" | "price_asc" | "price_desc" | "discount" | "newest";
+
+const sortOptions: { id: SortOption; label: string }[] = [
+  { id: "featured", label: "Featured & Deals" },
+  { id: "price_asc", label: "Price: Low to High" },
+  { id: "price_desc", label: "Price: High to Low" },
+  { id: "discount", label: "Highest Discount" },
+  { id: "newest", label: "Newest Arrivals" },
+];
 
 export function ShopCatalogClient({
   initialProducts = [],
@@ -58,8 +64,6 @@ export function ShopCatalogClient({
   const [selectedDealType, setSelectedDealType] = useState<string>(
     searchParams.get("deal") || "all"
   );
-  const [pricePreset, setPricePreset] = useState<string>("all");
-  const [minPrice, setMinPrice] = useState<string>(searchParams.get("min_price") || "");
   const [maxPrice, setMaxPrice] = useState<string>(searchParams.get("max_price") || "");
   const [inStockOnly, setInStockOnly] = useState<boolean>(
     searchParams.get("in_stock") === "true"
@@ -67,6 +71,32 @@ export function ShopCatalogClient({
   const [sortBy, setSortBy] = useState<SortOption>(
     (searchParams.get("sort") as SortOption) || "featured"
   );
+
+  // Custom Sort Dropdown State & Click-Outside Ref
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target as Node)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    if (sortDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [sortDropdownOpen]);
+
+  // Maximum price in catalog for slider range
+  const maxCatalogPrice = useMemo(() => {
+    if (!initialProducts || initialProducts.length === 0) return 5000;
+    const max = Math.max(...initialProducts.map((p) => Number(p.price) || 0));
+    return Math.max(Math.ceil(max / 500) * 500, 1000) || 5000;
+  }, [initialProducts]);
+
+  const currentSliderMax = maxPrice ? Number(maxPrice) : maxCatalogPrice;
+  const sliderPercent = Math.min(100, Math.max(0, (currentSliderMax / maxCatalogPrice) * 100));
 
   // Mobile Drawer State
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -91,8 +121,7 @@ export function ShopCatalogClient({
     if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","));
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
     if (selectedDealType !== "all") params.set("deal", selectedDealType);
-    if (minPrice) params.set("min_price", minPrice);
-    if (maxPrice) params.set("max_price", maxPrice);
+    if (maxPrice && Number(maxPrice) < maxCatalogPrice) params.set("max_price", maxPrice);
     if (inStockOnly) params.set("in_stock", "true");
     if (sortBy !== "featured") params.set("sort", sortBy);
 
@@ -101,7 +130,7 @@ export function ShopCatalogClient({
     startTransition(() => {
       window.history.replaceState(null, "", targetUrl);
     });
-  }, [searchQuery, selectedCategories, selectedBrands, selectedDealType, minPrice, maxPrice, inStockOnly, sortBy, pathname]);
+  }, [searchQuery, selectedCategories, selectedBrands, selectedDealType, maxPrice, maxCatalogPrice, inStockOnly, sortBy, pathname]);
 
   // Lock background body scroll when mobile filter drawer is open
   useEffect(() => {
@@ -134,27 +163,6 @@ export function ShopCatalogClient({
     return counts;
   }, [initialProducts]);
 
-  // Apply Price Preset
-  const handlePricePreset = (preset: string) => {
-    setPricePreset(preset);
-    if (preset === "all") {
-      setMinPrice("");
-      setMaxPrice("");
-    } else if (preset === "under_500") {
-      setMinPrice("");
-      setMaxPrice("500");
-    } else if (preset === "500_1500") {
-      setMinPrice("500");
-      setMaxPrice("1500");
-    } else if (preset === "1500_3000") {
-      setMinPrice("1500");
-      setMaxPrice("3000");
-    } else if (preset === "above_3000") {
-      setMinPrice("3000");
-      setMaxPrice("");
-    }
-  };
-
   // Toggle Category Selection
   const toggleCategory = (slugOrId: string) => {
     setSelectedCategories((prev) =>
@@ -175,8 +183,6 @@ export function ShopCatalogClient({
     setSelectedCategories([]);
     setSelectedBrands([]);
     setSelectedDealType("all");
-    setPricePreset("all");
-    setMinPrice("");
     setMaxPrice("");
     setInStockOnly(false);
     setSortBy("featured");
@@ -189,10 +195,10 @@ export function ShopCatalogClient({
     if (selectedCategories.length > 0) count += selectedCategories.length;
     if (selectedBrands.length > 0) count += selectedBrands.length;
     if (selectedDealType !== "all") count++;
-    if (minPrice || maxPrice) count++;
+    if (maxPrice && Number(maxPrice) < maxCatalogPrice) count++;
     if (inStockOnly) count++;
     return count;
-  }, [searchQuery, selectedCategories, selectedBrands, selectedDealType, minPrice, maxPrice, inStockOnly]);
+  }, [searchQuery, selectedCategories, selectedBrands, selectedDealType, maxPrice, maxCatalogPrice, inStockOnly]);
 
   // Master Filter & Sort Logic
   const filteredAndSortedProducts = useMemo(() => {
@@ -249,7 +255,6 @@ export function ShopCatalogClient({
 
         // 5. Price Range Filter
         const productPrice = Number(product.price);
-        if (minPrice && productPrice < Number(minPrice)) return false;
         if (maxPrice && productPrice > Number(maxPrice)) return false;
 
         // 6. In-Stock Availability Filter
@@ -281,9 +286,6 @@ export function ShopCatalogClient({
             new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
           );
         }
-        if (sortBy === "name") {
-          return a.name.localeCompare(b.name);
-        }
         // Default "featured" sort: prioritize deal flags then newest
         const scoreA =
           (a.is_today_deal ? 4 : 0) +
@@ -303,7 +305,6 @@ export function ShopCatalogClient({
     selectedCategories,
     selectedBrands,
     selectedDealType,
-    minPrice,
     maxPrice,
     inStockOnly,
     sortBy,
@@ -411,10 +412,7 @@ export function ShopCatalogClient({
           onClick={() => toggleSection("deals")}
           className="flex items-center justify-between w-full font-bold text-neutral-900 text-xs sm:text-sm uppercase tracking-wider mb-3 cursor-pointer"
         >
-          <span className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-[#8A1538]" />
-            <span>Special Deals &amp; Offers</span>
-          </span>
+          <span>Special Deals &amp; Offers</span>
           {openSections.deals ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
@@ -422,12 +420,11 @@ export function ShopCatalogClient({
           <div className="space-y-1.5 pt-1">
             {[
               { key: "all", label: "All Items", icon: ShoppingBag, color: "text-neutral-500" },
-              { key: "free_gift", label: "🎁 Free Gift Included", icon: Gift, color: "text-amber-600" },
-              { key: "today_deal", label: "🔥 Today's Best Deals", icon: Flame, color: "text-orange-600" },
-              { key: "best_deal", label: "⭐ Best Deals", icon: Sparkles, color: "text-amber-500" },
-              { key: "featured", label: "✨ Featured Gear", icon: Star, color: "text-yellow-600" },
-              { key: "best_seller", label: "🏆 Best Sellers", icon: Award, color: "text-indigo-600" },
-              { key: "new_arrival", label: "🚀 New Arrivals", icon: Tag, color: "text-cyan-600" },
+              { key: "free_gift", label: "Free Gift Included", icon: Gift, color: "text-amber-600" },
+              { key: "best_deal", label: "Best Deals", icon: Sparkles, color: "text-amber-500" },
+              { key: "featured", label: "Featured Gear", icon: Star, color: "text-yellow-600" },
+              { key: "best_seller", label: "Best Sellers", icon: Award, color: "text-indigo-600" },
+              { key: "new_arrival", label: "New Arrivals", icon: Tag, color: "text-cyan-600" },
             ].map((deal) => {
               const isSelected = selectedDealType === deal.key;
               return (
@@ -453,78 +450,43 @@ export function ShopCatalogClient({
         )}
       </div>
 
-      {/* 4. Price Range Filter */}
+      {/* 4. Price Range Filter (Simplified Slider matching reference) */}
       <div className="border-b border-neutral-200/80 pb-5">
-        <button
-          type="button"
-          onClick={() => toggleSection("price")}
-          className="flex items-center justify-between w-full font-bold text-neutral-900 text-xs sm:text-sm uppercase tracking-wider mb-3 cursor-pointer"
-        >
-          <span>Price Range ({currency})</span>
-          {openSections.price ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center justify-between mb-3">
+          <span className="font-extrabold text-neutral-900 text-xs sm:text-sm tracking-wider uppercase">
+            MAX PRICE
+          </span>
+          <span className="font-bold text-xs sm:text-sm text-[#8A1538]">
+            {currency} {currentSliderMax.toLocaleString()}
+          </span>
+        </div>
 
-        {openSections.price && (
-          <div className="space-y-3">
-            {/* Price Preset Chips */}
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                { id: "all", label: "All" },
-                { id: "under_500", label: `< 500` },
-                { id: "500_1500", label: "500–1.5k" },
-                { id: "1500_3000", label: "1.5k–3k" },
-                { id: "above_3000", label: `3k+` },
-              ].map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => handlePricePreset(p.id)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
-                    pricePreset === p.id
-                      ? "bg-[#8A1538] text-white border-[#8A1538]"
-                      : "bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300"
-                  }`}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
+        <div className="relative py-2">
+          <input
+            type="range"
+            min={0}
+            max={maxCatalogPrice}
+            step={maxCatalogPrice > 5000 ? 100 : 50}
+            value={currentSliderMax}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (val >= maxCatalogPrice) {
+                setMaxPrice("");
+              } else {
+                setMaxPrice(val.toString());
+              }
+            }}
+            className="range-slider"
+            style={{
+              background: `linear-gradient(to right, #8A1538 ${sliderPercent}%, #e2e8f0 ${sliderPercent}%)`,
+            }}
+          />
+        </div>
 
-            {/* Custom Min / Max Inputs */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div>
-                <label className="text-[10px] font-semibold text-neutral-500 block mb-1">
-                  Min (QAR)
-                </label>
-                <input
-                  type="number"
-                  value={minPrice}
-                  onChange={(e) => {
-                    setMinPrice(e.target.value);
-                    setPricePreset("custom");
-                  }}
-                  placeholder="0"
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 text-xs font-mono focus:outline-none focus:border-[#8A1538]"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-semibold text-neutral-500 block mb-1">
-                  Max (QAR)
-                </label>
-                <input
-                  type="number"
-                  value={maxPrice}
-                  onChange={(e) => {
-                    setMaxPrice(e.target.value);
-                    setPricePreset("custom");
-                  }}
-                  placeholder="5000"
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-neutral-200 text-xs font-mono focus:outline-none focus:border-[#8A1538]"
-                />
-              </div>
-            </div>
-          </div>
-        )}
+        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mt-1">
+          <span>{currency} 0</span>
+          <span>{currency} {maxCatalogPrice.toLocaleString()}</span>
+        </div>
       </div>
 
       {/* 5. In-Stock Availability */}
@@ -569,7 +531,7 @@ export function ShopCatalogClient({
         </nav>
 
         {/* ── Shop Hero Title & Live Controls ── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-neutral-200/80">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-7 bg-[#8A1538] rounded-full inline-block" />
@@ -578,7 +540,7 @@ export function ShopCatalogClient({
               </h1>
             </div>
             <p className="text-xs sm:text-sm text-neutral-500 mt-1">
-              Explore authentic Qatar tech deals, smartphones, laptops, audio, and official accessories.
+              Browse, filter, and find the perfect gear for you.
             </p>
           </div>
 
@@ -625,25 +587,54 @@ export function ShopCatalogClient({
             </span>
           </div>
 
-          {/* Right: Sort By Dropdown */}
+          {/* Right: Custom Sort By Dropdown */}
           <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold text-neutral-500 hidden sm:inline-block">
+            <label className="text-xs font-medium text-neutral-500 hidden sm:inline-block">
               Sort by:
             </label>
-            <div className="relative">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="appearance-none bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl pl-3 pr-8 py-2 text-xs font-bold text-neutral-800 focus:outline-none focus:border-[#8A1538] cursor-pointer"
+            <div className="relative" ref={sortDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setSortDropdownOpen((prev) => !prev)}
+                className={`inline-flex items-center justify-between gap-3 min-w-[170px] px-3.5 py-2 bg-white hover:bg-neutral-50 border rounded-xl text-xs font-semibold text-neutral-800 shadow-2xs transition-all cursor-pointer ${
+                  sortDropdownOpen
+                    ? "border-[#8A1538] ring-2 ring-[#8A1538]/10"
+                    : "border-neutral-200/90 hover:border-neutral-300"
+                }`}
               >
-                <option value="featured">✨ Featured &amp; Deals</option>
-                <option value="price_asc">💵 Price: Low to High</option>
-                <option value="price_desc">💎 Price: High to Low</option>
-                <option value="discount">🔥 Highest Discount</option>
-                <option value="newest">🚀 Newest Arrivals</option>
-                <option value="name">🔤 Alphabetical (A-Z)</option>
-              </select>
-              <ArrowUpDown className="w-3.5 h-3.5 text-neutral-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <span>{sortOptions.find((o) => o.id === sortBy)?.label || "Featured & Deals"}</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
+                    sortDropdownOpen ? "rotate-180 text-[#8A1538]" : ""
+                  }`}
+                />
+              </button>
+
+              {sortDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1.5 w-48 sm:w-52 bg-white rounded-2xl border border-neutral-200/80 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                  {sortOptions.map((opt) => {
+                    const isSelected = sortBy === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setSortBy(opt.id);
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-left transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-[#8A1538]/5 text-[#8A1538] font-bold"
+                            : "text-neutral-700 hover:bg-neutral-50"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-[#8A1538] shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -696,18 +687,14 @@ export function ShopCatalogClient({
               );
             })}
 
-            {(minPrice || maxPrice) && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold">
+            {maxPrice && Number(maxPrice) < maxCatalogPrice && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#8A1538]/10 text-[#8A1538] text-xs font-bold">
                 <span>
-                  Price: {minPrice || "0"} - {maxPrice || "Any"} {currency}
+                  Max: {currency} {Number(maxPrice).toLocaleString()}
                 </span>
                 <X
                   className="w-3 h-3 cursor-pointer"
-                  onClick={() => {
-                    setMinPrice("");
-                    setMaxPrice("");
-                    setPricePreset("all");
-                  }}
+                  onClick={() => setMaxPrice("")}
                 />
               </span>
             )}

@@ -342,7 +342,7 @@ export function CategoryNav({ categories = [] }: CategoryNavProps) {
                 return (
                   <Link
                     key={cat.id}
-                    href={`/categories/${cat.slug}`}
+                    href={`/shop?category=${cat.slug}`}
                     className="group inline-flex items-center gap-1.5 whitespace-nowrap px-2.5 py-1.5 rounded-lg border border-transparent hover:border-neutral-200/90 hover:bg-neutral-50/90 hover:shadow-2xs active:scale-95 transition-all duration-150 shrink-0"
                   >
                     {/* Vibrant Micro-badge with Icon */}

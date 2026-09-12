@@ -115,7 +115,7 @@ export function CategoryGrid({ categories = [] }: CategoryGridProps) {
                 return (
                   <Link
                     key={cat.id}
-                    href={`/categories/${cat.slug}`}
+                    href={`/shop?category=${cat.slug}`}
                     className="group flex flex-col items-center text-center p-2 rounded-2xl bg-neutral-50 border border-neutral-100/90 active:scale-95 transition-all"
                   >
                     <div className="relative w-13 h-13 sm:w-16 sm:h-16 mb-1.5 rounded-xl bg-white shadow-2xs flex items-center justify-center p-1.5">
@@ -152,7 +152,7 @@ export function CategoryGrid({ categories = [] }: CategoryGridProps) {
                 return (
                   <Link
                     key={cat.id}
-                    href={`/categories/${cat.slug}`}
+                    href={`/shop?category=${cat.slug}`}
                     className="group shrink-0 w-[calc((100%-5*16px)/6)] snap-start flex flex-col items-center text-center p-5 rounded-3xl bg-gradient-to-b from-neutral-50/90 via-white to-neutral-50/50 border border-neutral-200/90 hover:border-[#8A1538]/40 shadow-2xs hover:shadow-xl hover:shadow-[#8A1538]/10 hover:-translate-y-1.5 transition-all duration-300 relative overflow-hidden"
                   >
                     {/* Subtle Top Accent Glow on Hover */}
