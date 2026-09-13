@@ -10,7 +10,6 @@ import {
 import {
   Search,
   Wrench,
-  MessageCircle,
   Clock,
   CheckCircle2,
   AlertCircle,
@@ -29,6 +28,7 @@ import {
   Save,
   ShieldCheck,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface ServiceEnquiriesTableProps {
   initialEnquiries: ServiceEnquiry[];
@@ -410,7 +410,7 @@ export function ServiceEnquiriesTable({
                             className="p-1.5 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20 transition-colors"
                             title="Chat on WhatsApp"
                           >
-                            <MessageCircle className="w-4 h-4 fill-current" />
+                            <WhatsAppIcon className="w-4 h-4 fill-current" />
                           </a>
 
                           {/* View Details */}
@@ -527,7 +527,7 @@ export function ServiceEnquiriesTable({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#1fb855] text-white font-bold text-xs shadow-md transition-all active:scale-95"
                   >
-                    <MessageCircle className="w-4 h-4 fill-white" />
+                    <WhatsAppIcon className="w-4 h-4 fill-white" />
                     <span>Message Customer on WhatsApp</span>
                     <ExternalLink className="w-3 h-3 opacity-80" />
                   </a>

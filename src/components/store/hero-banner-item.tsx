@@ -1,7 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, MessageCircle, Wrench } from "lucide-react";
+import { ArrowRight, Wrench } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { getOptimizedImageUrl } from "@/lib/cloudinary";
 
 export interface HeroBannerData {
@@ -174,7 +175,7 @@ export function HeroBannerItem({
                     className="relative z-30 inline-flex items-center gap-1.5 sm:gap-2 p-2 sm:px-7 sm:py-3.5 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-[11px] sm:text-sm shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
                     aria-label="Order on WhatsApp"
                   >
-                    <MessageCircle className="w-4 h-4 fill-white" />
+                    <WhatsAppIcon className="w-4 h-4 fill-white" />
                     <span className="hidden sm:inline">{banner.secondary_cta_text}</span>
                   </a>
                 )}

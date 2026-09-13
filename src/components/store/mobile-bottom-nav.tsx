@@ -3,7 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ShoppingBag, LayoutGrid, MessageCircle, ShoppingCart, LucideIcon } from "lucide-react";
+import { Home, ShoppingBag, LayoutGrid, ShoppingCart } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { useCart } from "@/hooks/use-cart";
 
 interface MobileBottomNavProps {
@@ -13,7 +14,7 @@ interface MobileBottomNavProps {
 interface NavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   isActive: boolean;
   isExternal?: boolean;
   badge?: number;
@@ -50,7 +51,7 @@ export function MobileBottomNav({
       href: `https://wa.me/${whatsappCleanNumber}?text=${encodeURIComponent(
         "Hello Mobile Deals 👋 I would like to inquire about your products."
       )}`,
-      icon: MessageCircle,
+      icon: WhatsAppIcon,
       isActive: false,
       isExternal: true,
     },

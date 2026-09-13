@@ -9,7 +9,6 @@ import {
   Search,
   Filter,
   ShoppingBag,
-  MessageCircle,
   MapPin,
   ExternalLink,
   ChevronRight,
@@ -17,6 +16,7 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface OrderTableClientProps {
   initialOrders: Order[];
@@ -195,7 +195,7 @@ export function OrderTableClient({ initialOrders }: OrderTableClientProps) {
                             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-colors"
                             title="Chat with customer on WhatsApp"
                           >
-                            <MessageCircle className="w-3.5 h-3.5" />
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
                             <span>WhatsApp</span>
                           </a>
 

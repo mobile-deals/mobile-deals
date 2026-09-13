@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, User, Heart, ShoppingCart, MessageCircle, Menu, X, ChevronRight, Sparkles, Loader2, ArrowRight, Tag, ShoppingBag } from "lucide-react";
+import { Search, User, Heart, ShoppingCart, Menu, X, ChevronRight, Sparkles, Loader2, ArrowRight, Tag, ShoppingBag } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import Image from "next/image";
 import { Logo } from "@/components/ui/logo";
 import { useCart } from "@/hooks/use-cart";
@@ -417,7 +418,7 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
               className="flex items-center gap-1.5 px-4 py-2 bg-[#25D366] hover:bg-[#20ba59] text-white text-xs sm:text-sm font-semibold rounded-full shadow-xs hover:shadow-sm transition-all"
               aria-label="Order on WhatsApp"
             >
-              <MessageCircle className="w-4 h-4 fill-white" />
+              <WhatsAppIcon className="w-4 h-4 fill-white" />
               <span className="whitespace-nowrap">Order on WhatsApp</span>
             </a>
           </div>
@@ -548,7 +549,7 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white font-bold text-xs shadow-sm hover:bg-[#20ba59] transition-all"
               >
-                <MessageCircle className="w-4 h-4 fill-white" />
+                <WhatsAppIcon className="w-4 h-4 fill-white" />
                 <span>Order on WhatsApp</span>
               </a>
               <p className="text-[11px] text-center text-neutral-400 font-medium">

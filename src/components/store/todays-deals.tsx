@@ -36,7 +36,7 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between gap-3 mb-4 sm:mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-xl sm:text-2xl">🔥</span>
+            <span className="w-1.5 h-5 sm:h-6 bg-[#8A1538] rounded-full inline-block" />
             <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-neutral-900 tracking-tight">
               Today&apos;s Best Deals
             </h2>

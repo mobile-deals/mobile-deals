@@ -5,12 +5,12 @@ import { getSiteSettings } from "@/lib/data";
 import { Logo } from "@/components/ui/logo";
 import {
   CheckCircle2,
-  MessageCircle,
   Truck,
   MapPin,
   ArrowRight,
   Package,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface OrderSuccessPageProps {
   params: Promise<{
@@ -84,7 +84,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs sm:text-sm shadow-xs transition-all"
             >
-              <MessageCircle className="w-4 h-4 fill-white" />
+              <WhatsAppIcon className="w-4 h-4 fill-white" />
               <span>Confirm Faster on WhatsApp</span>
             </a>
           </div>

@@ -10,12 +10,12 @@ import {
   Banknote,
   ArrowUpRight,
   AlertTriangle,
-  MessageCircle,
   ExternalLink,
   ChevronRight,
   Clock,
   Sparkles,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -308,7 +308,7 @@ export default async function AdminDashboardPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[11px] font-bold transition-colors"
                           >
-                            <MessageCircle className="w-3.5 h-3.5" />
+                            <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
                             <span>WhatsApp</span>
                           </a>
                         </td>

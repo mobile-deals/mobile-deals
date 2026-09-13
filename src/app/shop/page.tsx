@@ -5,7 +5,6 @@ import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { MainNavbar } from "@/components/store/main-navbar";
 import { CategoryNav } from "@/components/store/category-nav";
 import { ShopCatalogClient } from "@/components/store/shop-catalog-client";
-import { TrustBar } from "@/components/store/trust-bar";
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
 import { Loader2 } from "lucide-react";
@@ -59,13 +58,11 @@ export default async function ShopPage() {
         </Suspense>
       </main>
 
-      {/* 5. Trust Bar */}
-      <TrustBar />
-
-      {/* 6. Footer */}
+      {/* 5. Footer */}
       <Footer
         whatsappNumber={settings.whatsapp_number}
         storeEmail={settings.store_email}
+        categories={categories}
       />
 
       {/* 7. Mobile Sticky Bottom Nav */}

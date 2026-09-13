@@ -10,7 +10,7 @@ import { ProductDetailsClient } from "@/components/store/product-details-client"
 
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
-import { ChevronRight, Shield } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 interface ProductPageProps {
   params: Promise<{
@@ -129,10 +129,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       </nav>
 
       {/* Product Content Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-4 sm:py-6 lg:py-8 w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           {/* Left Column: Gallery */}
-          <div className="lg:col-span-6 lg:sticky lg:top-24">
+          <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20">
             <ProductGallery
               images={product.product_images}
               productName={product.name}
@@ -140,7 +140,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           {/* Right Column: Information & Checkout Options */}
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-7 xl:col-span-7">
             <ProductDetailsClient
               product={product}
               whatsappNumber={settings.whatsapp_number}
@@ -174,7 +174,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           {/* Specifications Table */}
           <div className="lg:col-span-5 space-y-4">
             <h3 className="text-lg font-black text-neutral-900 tracking-tight flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#8A1538]" />
+              <span className="w-1.5 h-5 bg-[#8A1538] rounded-full inline-block" />
               Technical Specifications
             </h3>
 

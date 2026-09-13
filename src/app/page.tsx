@@ -70,6 +70,7 @@ export default async function HomePage() {
       <Footer
         whatsappNumber={settings.whatsapp_number}
         storeEmail={settings.store_email}
+        categories={categories}
       />
 
       {/* 10. Sticky Mobile Bottom Navigation */}

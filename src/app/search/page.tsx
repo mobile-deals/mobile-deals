@@ -5,7 +5,6 @@ import { searchProducts, getSiteSettings, getFeaturedProducts } from "@/lib/data
 import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { MainNavbar } from "@/components/store/main-navbar";
 import { ProductCard } from "@/components/store/product-card";
-import { TrustBar } from "@/components/store/trust-bar";
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
 import { Search, PackageOpen, Sparkles } from "lucide-react";
@@ -43,7 +42,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <main className="flex-1 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
         <div className="mb-8">
           <div className="flex items-center gap-2.5">
-            <Search className="w-6 h-6 text-[#8A1538]" />
+            <span className="w-1.5 h-6 bg-[#8A1538] rounded-full inline-block" />
             <h1 className="text-xl sm:text-2xl font-black text-neutral-900 tracking-tight">
               Search Results
             </h1>
@@ -81,7 +80,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             {relatedProducts.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Sparkles className="w-4 h-4 text-[#8A1538]" />
+                  <span className="w-1.5 h-5 bg-[#8A1538] rounded-full inline-block" />
                   <h2 className="text-base sm:text-lg font-black text-neutral-900 tracking-tight">
                     Related Products You Might Like
                   </h2>
@@ -111,7 +110,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         )}
       </main>
 
-      <TrustBar />
       <Footer
         whatsappNumber={settings.whatsapp_number}
         storeEmail={settings.store_email}
