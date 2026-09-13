@@ -12,10 +12,10 @@ import {
   Minus,
   Plus,
   ArrowRight,
-  MessageCircle,
   Truck,
   ShieldCheck,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 export default function CartPage() {
   const {
@@ -52,9 +52,7 @@ export default function CartPage() {
 
       <main className="flex-1 max-w-7xl mx-auto px-4 py-8 md:py-12 w-full">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-[#8A1538]/10 text-[#8A1538] flex items-center justify-center">
-            <ShoppingBag className="w-5 h-5" />
-          </div>
+          <span className="w-1.5 h-6 bg-[#8A1538] rounded-full inline-block" />
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
               Shopping Cart
@@ -221,7 +219,7 @@ export default function CartPage() {
                   rel="noopener noreferrer"
                   className="w-full py-3.5 px-6 rounded-2xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
                 >
-                  <MessageCircle className="w-4 h-4 fill-white" />
+                  <WhatsAppIcon className="w-4 h-4 fill-white" />
                   <span>Order Entire Cart on WhatsApp</span>
                 </a>
               </div>

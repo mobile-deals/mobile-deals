@@ -567,75 +567,80 @@ export function ShopCatalogClient({
         </div>
 
         {/* ── Top Filter Bar & Sort Controls ── */}
-        <div className="flex items-center justify-between gap-3 mb-6 bg-white p-3 rounded-2xl border border-neutral-200/80 shadow-2xs flex-wrap">
-          {/* Left: Mobile Filter Button & Active Results Count */}
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between gap-3 mb-6 bg-white px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl border border-neutral-200/80 shadow-2xs">
+          {/* Left: Active Results Count */}
+          <span className="text-xs sm:text-sm font-medium text-neutral-600">
+            Found {filteredAndSortedProducts.length}{" "}
+            {filteredAndSortedProducts.length === 1 ? "product" : "products"}
+          </span>
+
+          {/* Right: Sort Dropdown (Desktop Only) & Mobile Filter Button */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Custom Sort By Dropdown - Desktop Only */}
+            <div className="hidden lg:flex items-center gap-2">
+              <label className="text-xs font-medium text-neutral-500">
+                Sort by:
+              </label>
+              <div className="relative" ref={sortDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setSortDropdownOpen((prev) => !prev)}
+                  className={`inline-flex items-center justify-between gap-2.5 px-3 sm:px-3.5 py-2 bg-white hover:bg-neutral-50 border rounded-xl text-xs font-semibold text-neutral-800 shadow-2xs transition-all cursor-pointer ${
+                    sortDropdownOpen
+                      ? "border-[#8A1538] ring-2 ring-[#8A1538]/10"
+                      : "border-neutral-200/90 hover:border-neutral-300"
+                  }`}
+                >
+                  <span className="truncate">{sortOptions.find((o) => o.id === sortBy)?.label || "Featured & Deals"}</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-neutral-400 shrink-0 transition-transform duration-200 ${
+                      sortDropdownOpen ? "rotate-180 text-[#8A1538]" : ""
+                    }`}
+                  />
+                </button>
+
+                {sortDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-48 sm:w-52 bg-white rounded-2xl border border-neutral-200/80 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
+                    {sortOptions.map((opt) => {
+                      const isSelected = sortBy === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setSortBy(opt.id);
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-left transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-[#8A1538]/5 text-[#8A1538] font-bold"
+                              : "text-neutral-700 hover:bg-neutral-50"
+                          }`}
+                        >
+                          <span>{opt.label}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#8A1538] shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile/Tablet Filter Button with Website Brand Color */}
             <button
               type="button"
               onClick={() => setMobileFilterOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 px-4 py-2 bg-[#8A1538] text-white text-xs font-bold rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer"
+              className="lg:hidden inline-flex items-center gap-2 px-4 py-2 bg-[#8A1538] hover:bg-[#72122f] text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 transition-all cursor-pointer"
             >
-              <SlidersHorizontal className="w-4 h-4" />
-              <span>Filters {activeFiltersCount > 0 ? `(${activeFiltersCount})` : ""}</span>
-            </button>
-
-            <span className="text-xs sm:text-sm font-bold text-neutral-800">
-              {filteredAndSortedProducts.length}{" "}
-              <span className="text-neutral-500 font-normal">
-                {filteredAndSortedProducts.length === 1 ? "product" : "products"} found
-              </span>
-            </span>
-          </div>
-
-          {/* Right: Custom Sort By Dropdown */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-neutral-500 hidden sm:inline-block">
-              Sort by:
-            </label>
-            <div className="relative" ref={sortDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setSortDropdownOpen((prev) => !prev)}
-                className={`inline-flex items-center justify-between gap-3 min-w-[170px] px-3.5 py-2 bg-white hover:bg-neutral-50 border rounded-xl text-xs font-semibold text-neutral-800 shadow-2xs transition-all cursor-pointer ${
-                  sortDropdownOpen
-                    ? "border-[#8A1538] ring-2 ring-[#8A1538]/10"
-                    : "border-neutral-200/90 hover:border-neutral-300"
-                }`}
-              >
-                <span>{sortOptions.find((o) => o.id === sortBy)?.label || "Featured & Deals"}</span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
-                    sortDropdownOpen ? "rotate-180 text-[#8A1538]" : ""
-                  }`}
-                />
-              </button>
-
-              {sortDropdownOpen && (
-                <div className="absolute right-0 top-full mt-1.5 w-48 sm:w-52 bg-white rounded-2xl border border-neutral-200/80 shadow-xl py-1.5 z-40 animate-in fade-in zoom-in-95 duration-100">
-                  {sortOptions.map((opt) => {
-                    const isSelected = sortBy === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => {
-                          setSortBy(opt.id);
-                          setSortDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-left transition-colors cursor-pointer ${
-                          isSelected
-                            ? "bg-[#8A1538]/5 text-[#8A1538] font-bold"
-                            : "text-neutral-700 hover:bg-neutral-50"
-                        }`}
-                      >
-                        <span>{opt.label}</span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#8A1538] shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-white" />
+              <span>Filters</span>
+              {activeFiltersCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-white text-[#8A1538] text-[10px] font-extrabold inline-flex items-center justify-center">
+                  {activeFiltersCount}
+                </span>
               )}
-            </div>
+            </button>
           </div>
         </div>
 

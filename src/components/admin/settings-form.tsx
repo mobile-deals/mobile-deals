@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { updateSiteSettingsAction } from "@/app/actions/admin";
 import { SiteSettings } from "@/types/database";
-import { Loader2, CheckCircle2, Settings, MessageCircle, Truck, ShieldCheck, DollarSign } from "lucide-react";
+import { Loader2, CheckCircle2, Settings, Truck, ShieldCheck, DollarSign } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface SettingsFormProps {
   initialSettings: SiteSettings;
@@ -12,8 +13,8 @@ interface SettingsFormProps {
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
   const [formData, setFormData] = useState({
     store_name: initialSettings.store_name || "MOBILE DEALS",
-    whatsapp_number: initialSettings.whatsapp_number || "+97455000000",
-    support_phone: initialSettings.support_phone || "+97455000000",
+    whatsapp_number: initialSettings.whatsapp_number || "97455000000",
+    support_phone: initialSettings.support_phone || "97455000000",
     store_email: initialSettings.store_email || "support@mobiledeals.qa",
     currency: initialSettings.currency || "QAR",
     free_delivery_threshold: initialSettings.free_delivery_threshold || 100,
@@ -66,15 +67,22 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
 
           <div className="space-y-1">
             <label className="font-semibold text-neutral-300 flex items-center gap-1.5">
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <WhatsAppIcon className="w-3.5 h-3.5 text-emerald-400" />
               <span>Official WhatsApp Order Number (Qatar) *</span>
             </label>
             <input
-              type="text"
+              type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               required
               value={formData.whatsapp_number}
-              onChange={(e) => setFormData({ ...formData, whatsapp_number: e.target.value })}
-              placeholder="+974 5500 0000"
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  whatsapp_number: e.target.value.replace(/\D/g, ""),
+                })
+              }
+              placeholder="e.g. 97455000000"
               className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white font-mono text-sm focus:outline-none focus:border-[#8A1538]"
             />
             <p className="text-[11px] text-neutral-500 mt-1">
@@ -88,9 +96,17 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                 Customer Support Phone
               </label>
               <input
-                type="text"
+                type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={formData.support_phone}
-                onChange={(e) => setFormData({ ...formData, support_phone: e.target.value })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    support_phone: e.target.value.replace(/\D/g, ""),
+                  })
+                }
+                placeholder="e.g. 97455000000"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-white font-mono focus:outline-none focus:border-[#8A1538]"
               />
             </div>

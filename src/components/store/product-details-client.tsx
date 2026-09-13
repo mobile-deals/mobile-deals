@@ -9,7 +9,6 @@ import { generateProductWhatsAppUrl } from "@/lib/whatsapp";
 import {
   ShoppingCart,
   Zap,
-  MessageCircle,
   Truck,
   ShieldCheck,
   Gift,
@@ -18,6 +17,7 @@ import {
   Plus,
   Check,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface ProductDetailsClientProps {
   product: Product;
@@ -246,7 +246,7 @@ export function ProductDetailsClient({
             rel="noopener noreferrer"
             className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#1fb855] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
           >
-            <MessageCircle className="w-4 h-4 fill-white shrink-0" />
+            <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
             <span>WhatsApp</span>
           </a>
         </div>

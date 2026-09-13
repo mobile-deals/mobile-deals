@@ -182,12 +182,17 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <input
                         type="tel"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
                         required
                         value={formData.customerPhone}
                         onChange={(e) =>
-                          setFormData({ ...formData, customerPhone: e.target.value })
+                          setFormData({
+                            ...formData,
+                            customerPhone: e.target.value.replace(/\D/g, ""),
+                          })
                         }
-                        placeholder="+974 5500 0000"
+                        placeholder="e.g. 55000000 or 33000000"
                         className="w-full px-4 py-3 rounded-xl border border-neutral-300 text-sm focus:outline-none focus:border-[#8A1538] focus:ring-2 focus:ring-[#8A1538]/10"
                       />
                       <Phone className="w-4 h-4 text-neutral-400 absolute right-3.5 top-1/2 -translate-y-1/2" />

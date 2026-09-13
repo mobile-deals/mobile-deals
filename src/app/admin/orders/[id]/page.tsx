@@ -13,12 +13,12 @@ import {
   Phone,
   Mail,
   Calendar,
-  MessageCircle,
   Truck,
   ShieldCheck,
   FileText,
   Clock,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +74,7 @@ export default async function AdminOrderDetailPage({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-bold transition-colors"
           >
-            <MessageCircle className="w-4 h-4" />
+            <WhatsAppIcon className="w-4 h-4 text-emerald-400" />
             <span>Chat on WhatsApp</span>
           </a>
         </div>

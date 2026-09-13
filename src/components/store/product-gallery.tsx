@@ -16,21 +16,21 @@ export function ProductGallery({ images = [], productName }: ProductGalleryProps
   const activeImage = images[selectedIdx]?.image_url || null;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Main Image Viewport */}
-      <div className="relative w-full aspect-square bg-neutral-50/60 rounded-3xl flex items-center justify-center overflow-hidden">
+    <div className="flex flex-col gap-3">
+      {/* Main Image Viewport — Fits fully above the fold on first view */}
+      <div className="relative w-full h-[320px] sm:h-[380px] lg:h-[440px] bg-neutral-50/80 border border-neutral-100/80 rounded-3xl flex items-center justify-center overflow-hidden p-4 sm:p-6 shadow-2xs">
         {activeImage ? (
           <Image
             src={getOptimizedImageUrl(activeImage, "detail")}
             alt={images[selectedIdx]?.alt_text || productName}
             fill
             priority
-            sizes="(max-width: 768px) 100vw, 50vw"
-            className="object-contain p-2 transition-all duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+            className="object-contain p-3 sm:p-4 transition-all duration-300"
           />
         ) : (
           <div className="flex flex-col items-center justify-center text-neutral-300">
-            <span className="text-6xl">📱</span>
+            <span className="text-5xl">📱</span>
             <span className="text-xs text-neutral-400 mt-2 font-medium">No Image Available</span>
           </div>
         )}
@@ -38,23 +38,23 @@ export function ProductGallery({ images = [], productName }: ProductGalleryProps
 
       {/* Thumbnails Row */}
       {images.length > 1 && (
-        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
+        <div className="flex items-center gap-2.5 overflow-x-auto no-scrollbar py-1">
           {images.map((img, idx) => (
             <button
               key={img.id || idx}
               type="button"
               onClick={() => setSelectedIdx(idx)}
-              className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-white border p-1.5 shrink-0 overflow-hidden transition-all ${
+              className={`relative w-15 h-15 sm:w-18 sm:h-18 rounded-2xl bg-white border p-1.5 shrink-0 overflow-hidden transition-all cursor-pointer ${
                 selectedIdx === idx
-                  ? "border-[#8A1538] ring-2 ring-[#8A1538]/20 shadow-xs"
-                  : "border-neutral-200 hover:border-neutral-400 opacity-70 hover:opacity-100"
+                  ? "border-[#8A1538] ring-2 ring-[#8A1538]/20 shadow-xs scale-102"
+                  : "border-neutral-200 hover:border-neutral-300 opacity-70 hover:opacity-100"
               }`}
             >
               <Image
                 src={getOptimizedImageUrl(img.image_url, "thumb")}
                 alt={img.alt_text || `${productName} thumbnail ${idx + 1}`}
                 fill
-                sizes="80px"
+                sizes="72px"
                 className="object-contain p-1"
               />
             </button>

@@ -4,7 +4,6 @@ import { getSiteSettings } from "@/lib/data";
 import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { MainNavbar } from "@/components/store/main-navbar";
 import { ServiceEnquiryForm } from "@/components/store/service-enquiry-form";
-import { TrustBar } from "@/components/store/trust-bar";
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
 
@@ -38,10 +37,7 @@ export default async function ServiceEnquiryPage() {
         />
       </main>
 
-      {/* 4. Trust Badges */}
-      <TrustBar />
-
-      {/* 5. Store Footer */}
+      {/* 4. Store Footer */}
       <Footer
         whatsappNumber={settings.whatsapp_number}
         storeEmail={settings.store_email}
