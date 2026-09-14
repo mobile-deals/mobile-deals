@@ -294,7 +294,7 @@ export function ProductDetailsClient({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-neutral-600">
         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
           <Truck className="w-4 h-4 text-[#8A1538] shrink-0" />
-          <span><strong>Free Delivery</strong><br className="hidden sm:block" /> 24–48 hrs Qatar</span>
+          <span><strong>Fast Delivery</strong><br className="hidden sm:block" /> 24–48 hrs Qatar</span>
         </div>
         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 border border-neutral-200/60">
           <ShieldCheck className="w-4 h-4 text-[#8A1538] shrink-0" />

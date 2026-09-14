@@ -13,7 +13,6 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   announcement_bar: {
     enabled: true,
     items: [
-      "Free Delivery Across Qatar",
       "Cash on Delivery Available",
       "Order on WhatsApp",
       "100% Genuine Products",

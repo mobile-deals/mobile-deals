@@ -154,7 +154,7 @@ export function HeroSection({
 
   // Trust items shown under hero (matching referral: 4 in a clean row)
   const trustFeatures = [
-    { icon: Truck, line1: "Free Delivery", line2: "Qatar" },
+    { icon: Truck, line1: "Fast Delivery", line2: "Qatar" },
     { icon: Banknote, line1: "Cash on", line2: "Delivery" },
     { icon: PhoneCall, line1: "WhatsApp", line2: "Support" },
     { icon: ShieldCheck, line1: "Genuine", line2: "Products" },
