@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Category } from "@/types/database";
 import { Logo } from "@/components/ui/logo";
 import { Mail, MapPin, Phone, ChevronDown } from "lucide-react";
-import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
 interface FooterProps {
   whatsappNumber?: string;
@@ -52,24 +51,6 @@ export function Footer({
               Mobile Deals is Qatar&apos;s premier online destination for mobile phones, electronics,
               accessories, and gadgets with guaranteed Cash on Delivery across Qatar.
             </p>
-            <div className="flex items-center gap-3 pt-2">
-              <a
-                href={`https://wa.me/${whatsappCleanNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-xl bg-[#25D366] text-white flex items-center justify-center hover:scale-105 transition-transform"
-                title="WhatsApp Mobile Deals"
-              >
-                <WhatsAppIcon className="w-5 h-5 fill-white" />
-              </a>
-              <a
-                href={`mailto:${storeEmail}`}
-                className="w-9 h-9 rounded-xl bg-neutral-800 text-neutral-300 hover:text-white flex items-center justify-center hover:scale-105 transition-transform"
-                title="Email Us"
-              >
-                <Mail className="w-4 h-4" />
-              </a>
-            </div>
           </div>
 
           {/* Col 2: Categories Accordion on Mobile */}
@@ -268,7 +249,14 @@ export function Footer({
           <p>© {new Date().getFullYear()} MOBILE DEALS. All rights reserved. Doha, Qatar.</p>
           <div className="flex items-center gap-1.5 text-neutral-400">
             <span>Crafted by</span>
-            <span className="text-white font-bold tracking-wide">Ekodrix</span>
+            <a
+              href="https://www.ekodrix.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white font-bold tracking-wide hover:text-[#F59E0B] transition-colors"
+            >
+              Ekodrix
+            </a>
           </div>
         </div>
       </div>

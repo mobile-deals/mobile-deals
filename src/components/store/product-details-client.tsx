@@ -8,7 +8,6 @@ import { useCart } from "@/hooks/use-cart";
 import { generateProductWhatsAppUrl } from "@/lib/whatsapp";
 import {
   ShoppingCart,
-  Zap,
   Truck,
   ShieldCheck,
   Gift,
@@ -210,20 +209,20 @@ export function ProductDetailsClient({
             </button>
           </div>
 
-          {/* Add to Cart — fills remaining width */}
+          {/* Add to Cart */}
           <button
             type="button"
             onClick={handleAddToCart}
-            className="flex-1 py-2.5 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2.5 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white"
+            className="py-2.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white shrink-0"
           >
             {addedToast ? (
               <>
-                <Check className="w-5 h-5 text-emerald-200" />
+                <Check className="w-4 h-4 text-emerald-200" />
                 <span>Added to Cart!</span>
               </>
             ) : (
               <>
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingCart className="w-4 h-4" />
                 <span>Add to Cart</span>
               </>
             )}
@@ -236,9 +235,8 @@ export function ProductDetailsClient({
         <button
           type="button"
           onClick={handleBuyWithCOD}
-          className="py-3.5 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+          className="py-3.5 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
         >
-          <Zap className="w-4 h-4 text-amber-400 shrink-0" />
           <span>Cash on Delivery</span>
         </button>
 
