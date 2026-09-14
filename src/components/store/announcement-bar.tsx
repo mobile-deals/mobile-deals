@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import { Truck, Banknote, ShieldCheck, PhoneCall, LucideIcon } from "lucide-react";
 
 interface AnnouncementBarProps {
@@ -29,7 +31,6 @@ function getIconForAnnouncement(text: string): LucideIcon {
 }
 
 export function AnnouncementBar({ items }: AnnouncementBarProps) {
-  // Filter out any "free delivery" items from database or props
   const rawItems = items && items.length > 0 ? items : DEFAULT_ANNOUNCEMENT_ITEMS;
   const displayItems = rawItems
     .filter((item) => !item.toLowerCase().includes("free delivery"))
@@ -37,11 +38,36 @@ export function AnnouncementBar({ items }: AnnouncementBarProps) {
 
   const finalItems = displayItems.length > 0 ? displayItems : DEFAULT_ANNOUNCEMENT_ITEMS;
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (finalItems.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % finalItems.length);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, [finalItems.length]);
+
+  const CurrentMobileIcon = getIconForAnnouncement(finalItems[currentIndex] || finalItems[0]);
+
   return (
-    <div className="w-full bg-[#8A1538] text-white text-xs font-medium border-b border-[#6E132D] select-none">
-      <div className="relative max-w-7xl mx-auto px-4 py-2 flex items-center justify-center min-h-[36px]">
-        {/* Center: Dynamic Trust Items */}
-        <div className="flex items-center justify-center gap-4 md:gap-6 overflow-x-auto no-scrollbar py-0.5 text-center">
+    <div className="w-full bg-[#8A1538] text-white text-[11px] sm:text-xs font-medium border-b border-[#6E132D] select-none">
+      <div className="relative max-w-7xl mx-auto px-4 py-2 flex items-center justify-center min-h-[34px] sm:min-h-[36px]">
+        {/* Mobile View: Clean Rotating Single Announcement (Centered, Never Cut Off) */}
+        <div className="flex md:hidden items-center justify-center w-full px-4 text-center overflow-hidden">
+          <div
+            key={currentIndex}
+            className="flex items-center justify-center gap-2 text-white/95 transition-all duration-300"
+          >
+            <CurrentMobileIcon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
+            <span className="font-semibold tracking-wide truncate max-w-[290px]">
+              {finalItems[currentIndex]}
+            </span>
+          </div>
+        </div>
+
+        {/* Desktop View: All Announcements Side-by-Side Centered */}
+        <div className="hidden md:flex items-center justify-center gap-6 text-center">
           {finalItems.map((item, idx) => {
             const Icon = getIconForAnnouncement(item);
             return (
@@ -52,14 +78,14 @@ export function AnnouncementBar({ items }: AnnouncementBarProps) {
                 <Icon className="w-3.5 h-3.5 text-[#F59E0B] shrink-0" />
                 <span>{item}</span>
                 {idx < finalItems.length - 1 && (
-                  <span className="text-white/30 hidden lg:inline ml-4 md:ml-6">|</span>
+                  <span className="text-white/30 ml-6">|</span>
                 )}
               </div>
             );
           })}
         </div>
 
-        {/* Right: Qatar Flag + Currency */}
+        {/* Right: Qatar Flag + Currency (Desktop) */}
         <div className="hidden sm:flex items-center gap-1.5 absolute right-4 top-1/2 -translate-y-1/2 text-white/90">
           <svg
             className="w-4 h-3 rounded-xs shadow-xs"
