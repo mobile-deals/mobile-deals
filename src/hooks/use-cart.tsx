@@ -13,6 +13,7 @@ interface CartContextType {
   subtotal: number;
   deliveryFee: number;
   total: number;
+  isHydrated: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ const CART_STORAGE_KEY = "mobile_deals_cart_v1";
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState<number>(0);
 
   // Load from localStorage on mount only (client-safe, avoids hydration mismatch)
   useEffect(() => {
@@ -35,6 +37,24 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsHydrated(true);
     }
+  }, []);
+
+  // Fetch active site settings (including shipping charge)
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch("/api/settings");
+        if (res.ok) {
+          const data = await res.json();
+          if (typeof data.shipping_charge === "number" && data.shipping_charge >= 0) {
+            setDeliveryFee(data.shipping_charge);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch delivery charge from settings", err);
+      }
+    }
+    loadSettings();
   }, []);
 
   // Sync to localStorage whenever items change
@@ -98,7 +118,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 0; // Free delivery across Qatar
   const total = subtotal + deliveryFee;
 
   return (
@@ -113,6 +132,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         subtotal,
         deliveryFee,
         total,
+        isHydrated,
       }}
     >
       {children}

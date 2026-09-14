@@ -155,7 +155,9 @@ export function OrderReceiptModal({ order }: { order: Order }) {
                   </div>
                   <div className="flex justify-between text-neutral-600">
                     <span>Qatar Delivery:</span>
-                    <span className="text-emerald-700 font-bold">FREE</span>
+                    <span className={Number(order.delivery_fee) === 0 ? "text-emerald-700 font-bold" : "font-mono font-bold text-neutral-900"}>
+                      {Number(order.delivery_fee) === 0 ? "FREE" : `QAR ${Number(order.delivery_fee).toLocaleString()}`}
+                    </span>
                   </div>
                   <div className="flex justify-between text-sm font-black text-neutral-900 pt-1 border-t border-neutral-200">
                     <span>Total Payable (COD):</span>

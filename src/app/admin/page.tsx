@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SeedButton } from "@/components/admin/seed-button";
 import { DashboardCharts } from "@/components/admin/dashboard-charts";
 import {
   Package,
@@ -145,11 +144,6 @@ export default async function AdminDashboardPage() {
           <p className="text-xs sm:text-sm text-neutral-400 font-medium">
             Monitor real-time Qatar sales, customer COD dispatches, inventory, and promotions.
           </p>
-        </div>
-
-        {/* Database One-Click Seeder / Sync */}
-        <div className="flex items-center gap-3">
-          <SeedButton />
         </div>
       </div>
 

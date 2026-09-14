@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteSettings } from "@/lib/data";
 import { sendOrderEmails } from "@/lib/brevo";
 import { CartItem, Order, OrderItem } from "@/types/database";
 
@@ -36,25 +38,31 @@ export async function createCodOrder(data: CreateOrderInput): Promise<{
     }
 
     if (!data.items || data.items.length === 0) {
-      return { success: false, error: "Your cart is empty." };
+      return { success: false, error: "Your order has no items selected." };
     }
 
-    // 2. Calculate totals
+    // 2. Fetch site settings to get active Qatar fixed delivery charge
+    const settings = await getSiteSettings();
+    const deliveryFee =
+      typeof settings.shipping_charge === "number" && settings.shipping_charge >= 0
+        ? settings.shipping_charge
+        : 0;
+
+    // 3. Calculate subtotal and final total
     const subtotal = data.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-    const deliveryFee = 0; // Free delivery across Qatar
     const total = subtotal + deliveryFee;
 
-    // 3. Generate human-readable order reference: MD-YYYYMMDD-XXXX
+    // 4. Generate human-readable order reference: MD-YYYYMMDD-XXXX
     const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const randomHex = Math.random().toString(36).substring(2, 6).toUpperCase();
     const orderReference = `MD-${dateStr}-${randomHex}`;
 
     const supabase = createAdminClient();
 
-    // 4. Insert into orders table
+    // 5. Insert into orders table with persistent delivery_fee
     const { data: orderData, error: orderError } = await supabase
       .from("orders")
       .insert({
@@ -80,13 +88,13 @@ export async function createCodOrder(data: CreateOrderInput): Promise<{
       console.error("[OrderAction] Order insert failed:", orderError);
       return {
         success: false,
-        error: "Unable to process order at this moment. Please try again or order on WhatsApp.",
+        error: "Unable to process order at this moment. Please try again or order directly on WhatsApp.",
       };
     }
 
     const orderId = orderData.id;
 
-    // 5. Batch insert order items
+    // 6. Batch insert order items
     const orderItemsToInsert = data.items.map((item) => ({
       order_id: orderId,
       product_id: item.productId,
@@ -106,19 +114,19 @@ export async function createCodOrder(data: CreateOrderInput): Promise<{
       console.error("[OrderAction] Order items insert error:", itemsError);
     }
 
-    // 6. Trigger transactional confirmation emails via Brevo
+    // 7. Trigger transactional confirmation emails via Brevo
     try {
       const orderRecord: Order = {
         id: orderId,
         order_reference: orderReference,
-        customer_name: data.customerName,
-        customer_phone: data.customerPhone,
-        customer_email: data.customerEmail || null,
-        area: data.area,
-        zone: data.zone || null,
-        street: data.street || null,
-        building: data.building || null,
-        delivery_notes: data.deliveryNotes || null,
+        customer_name: data.customerName.trim(),
+        customer_phone: data.customerPhone.trim(),
+        customer_email: data.customerEmail?.trim() || null,
+        area: data.area.trim(),
+        zone: data.zone?.trim() || null,
+        street: data.street?.trim() || null,
+        building: data.building?.trim() || null,
+        delivery_notes: data.deliveryNotes?.trim() || null,
         subtotal,
         delivery_fee: deliveryFee,
         total,
@@ -145,6 +153,15 @@ export async function createCodOrder(data: CreateOrderInput): Promise<{
       }).catch((e) => console.warn("[Brevo] Background email failed:", e));
     } catch (e) {
       console.warn("[OrderAction] Email notification skipped:", e);
+    }
+
+    // 8. Invalidate admin caches so dashboard is updated instantly
+    try {
+      revalidatePath("/admin");
+      revalidatePath("/admin/orders");
+      revalidatePath("/");
+    } catch (e) {
+      console.warn("[OrderAction] Cache revalidation skipped:", e);
     }
 
     return {

@@ -77,19 +77,22 @@ export function ProductDetailsClient({
   };
 
   const handleBuyWithCOD = () => {
-    addItem(
-      {
-        productId: product.id,
-        productName: product.name,
-        productSlug: product.slug,
-        variantId: selectedVariant?.id,
-        variantName: selectedVariant?.name,
-        price: currentPrice,
-        imageUrl: primaryImage,
-      },
-      quantity
-    );
-    router.push("/checkout");
+    const directItem = {
+      productId: product.id,
+      productName: product.name,
+      productSlug: product.slug,
+      variantId: selectedVariant?.id,
+      variantName: selectedVariant?.name,
+      price: currentPrice,
+      imageUrl: primaryImage,
+      quantity: quantity,
+    };
+    try {
+      sessionStorage.setItem("direct_checkout_item", JSON.stringify([directItem]));
+    } catch (e) {
+      console.warn("Could not save direct checkout item", e);
+    }
+    router.push("/checkout?direct=1");
   };
 
   const whatsAppUrl = generateProductWhatsAppUrl({
@@ -103,7 +106,6 @@ export function ProductDetailsClient({
 
   return (
     <div className="flex flex-col gap-5">
-
       {/* ── Brand + badges row ── */}
       <div className="flex items-center flex-wrap gap-2">
         {product.brand && (
@@ -231,25 +233,25 @@ export function ProductDetailsClient({
 
       {/* ── COD + WhatsApp side by side ── */}
       <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={handleBuyWithCOD}
-            className="py-3.5 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
-          >
-            <Zap className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Cash on Delivery</span>
-          </button>
+        <button
+          type="button"
+          onClick={handleBuyWithCOD}
+          className="py-3.5 px-3 rounded-2xl bg-neutral-900 hover:bg-neutral-800 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+        >
+          <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>Cash on Delivery</span>
+        </button>
 
-          <a
-            href={whatsAppUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#1fb855] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
-          >
-            <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
-            <span>WhatsApp</span>
-          </a>
-        </div>
+        <a
+          href={whatsAppUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="py-3.5 px-3 rounded-2xl bg-[#25D366] hover:bg-[#1fb855] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all active:scale-[0.99]"
+        >
+          <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
+          <span>Order via WhatsApp</span>
+        </a>
+      </div>
 
       {/* ── Free Gift card ── */}
       {isGiftEnabled && (
@@ -303,7 +305,6 @@ export function ProductDetailsClient({
           <span><strong>100% Genuine</strong><br className="hidden sm:block" /> Sealed original unit</span>
         </div>
       </div>
-
     </div>
   );
 }
