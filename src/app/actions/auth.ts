@@ -45,7 +45,7 @@ export async function adminLoginAction(formData: FormData) {
     }
 
     // 2. Custom Environment Variable Credentials (.env.local)
-    const configuredAdminEmail = (process.env.STORE_ADMIN_EMAIL || "admin@mobiledeals.qa").toLowerCase();
+    const configuredAdminEmail = (process.env.ADMIN_EMAIL || "admin@mobiledeals.qa").toLowerCase();
     const configuredAdminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
     if (

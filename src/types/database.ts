@@ -141,6 +141,7 @@ export interface SiteSettings {
   support_phone: string;
   store_email: string;
   currency: string;
+  shipping_charge?: number;
   free_delivery_threshold?: number;
   announcement_bar?: {
     enabled: boolean;

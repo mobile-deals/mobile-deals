@@ -172,7 +172,9 @@ export default async function AdminOrderDetailPage({
               </div>
               <div className="flex justify-between text-neutral-400">
                 <span>Doorstep Qatar Delivery</span>
-                <span className="text-emerald-400 font-bold">FREE DELIVERY</span>
+                <span className={Number(order.delivery_fee) === 0 ? "text-emerald-400 font-bold" : "text-white font-mono font-bold"}>
+                  {Number(order.delivery_fee) === 0 ? "FREE DELIVERY" : `QAR ${Number(order.delivery_fee).toLocaleString()}`}
+                </span>
               </div>
               <div className="flex justify-between text-sm font-black text-white pt-2 border-t border-neutral-800">
                 <span>Payable Amount (COD)</span>

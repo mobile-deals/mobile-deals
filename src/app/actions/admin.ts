@@ -543,6 +543,8 @@ export async function updateSiteSettingsAction(settings: Partial<SiteSettings>) 
     if (error) throw error;
 
     revalidatePath("/");
+    revalidatePath("/checkout");
+    revalidatePath("/cart");
     revalidatePath("/admin/settings");
     return { success: true };
   } catch (err: unknown) {

@@ -14,6 +14,7 @@ import {
   ArrowRight,
   Truck,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 
@@ -26,6 +27,7 @@ export default function CartPage() {
     deliveryFee,
     total,
     totalItems,
+    isHydrated,
   } = useCart();
 
   const whatsAppOrderUrl = generateCartWhatsAppUrl({
@@ -34,6 +36,24 @@ export default function CartPage() {
     total: total,
     currency: "QAR",
   });
+
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen flex flex-col bg-neutral-50/60">
+        <header className="bg-white border-b border-neutral-200">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <Logo size="md" />
+          </div>
+        </header>
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin text-[#8A1538] mx-auto mb-3" />
+            <p className="text-xs font-semibold text-neutral-500">Loading your cart...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50/60">
@@ -151,7 +171,7 @@ export default function CartPage() {
                       </div>
 
                       {/* Total Item Price */}
-                      <span className="text-sm sm:text-base font-black text-neutral-900 w-24 text-right">
+                      <span className="text-sm sm:text-base font-black text-neutral-900 w-24 text-right font-mono">
                         QAR {(item.price * item.quantity).toLocaleString()}
                       </span>
 
@@ -173,7 +193,7 @@ export default function CartPage() {
               <div className="p-4 rounded-2xl bg-white border border-neutral-200/90 flex items-center gap-3 text-xs text-neutral-600">
                 <Truck className="w-5 h-5 text-[#8A1538] shrink-0" />
                 <span>
-                  <strong>Free Express Nationwide Delivery</strong> within Qatar. Cash on Delivery is collected safely at your doorstep.
+                  <strong>Express Doorstep Delivery</strong> across Qatar. Cash on Delivery is collected safely at your doorstep.
                 </span>
               </div>
             </div>
@@ -187,17 +207,19 @@ export default function CartPage() {
               <div className="space-y-3 text-xs sm:text-sm divide-y divide-neutral-100">
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-neutral-500">Subtotal ({totalItems} items)</span>
-                  <span className="font-bold text-neutral-900">QAR {subtotal.toLocaleString()}</span>
+                  <span className="font-bold text-neutral-900 font-mono">QAR {subtotal.toLocaleString()}</span>
                 </div>
 
                 <div className="flex items-center justify-between pt-3">
                   <span className="text-neutral-500">Delivery Fee Across Qatar</span>
-                  <span className="font-bold text-emerald-600">FREE</span>
+                  <span className={`font-bold ${deliveryFee === 0 ? "text-emerald-600" : "text-neutral-900 font-mono"}`}>
+                    {deliveryFee === 0 ? "FREE" : `QAR ${deliveryFee.toLocaleString()}`}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between pt-3 text-base sm:text-lg">
                   <span className="font-bold text-neutral-900">Total</span>
-                  <span className="font-black text-[#8A1538]">
+                  <span className="font-black text-[#8A1538] font-mono">
                     QAR {total.toLocaleString()}
                   </span>
                 </div>

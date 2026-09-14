@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSiteSettings } from "@/lib/data";
@@ -11,6 +11,7 @@ import {
   Package,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
+import { ClearCartOnSuccess } from "@/components/store/clear-cart-on-success";
 
 interface OrderSuccessPageProps {
   params: Promise<{
@@ -40,6 +41,9 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
 
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50/60">
+      <Suspense fallback={null}>
+        <ClearCartOnSuccess />
+      </Suspense>
       <header className="bg-white border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <Logo size="md" />
@@ -130,7 +134,9 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
               </div>
               <div className="flex justify-between text-neutral-600">
                 <span>Qatar Delivery</span>
-                <span className="font-semibold text-emerald-600">FREE</span>
+                <span className={`font-semibold ${Number(order.delivery_fee) === 0 ? "text-emerald-600" : "text-neutral-900 font-mono"}`}>
+                  {Number(order.delivery_fee) === 0 ? "FREE" : `QAR ${Number(order.delivery_fee).toLocaleString()}`}
+                </span>
               </div>
               <div className="flex justify-between text-base font-black text-[#8A1538] pt-2 border-t border-neutral-100">
                 <span>Total Due at Doorstep (COD)</span>

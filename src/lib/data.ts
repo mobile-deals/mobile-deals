@@ -8,6 +8,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
   support_phone: "+97455000000",
   store_email: "support@mobiledeals.qa",
   currency: "QAR",
+  shipping_charge: 0,
   free_delivery_threshold: 100,
   announcement_bar: {
     enabled: true,
