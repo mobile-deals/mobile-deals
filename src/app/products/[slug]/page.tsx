@@ -91,7 +91,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white w-full max-w-full overflow-x-hidden">
       {/* Inject JSON-LD */}
       <script
         type="application/ld+json"
@@ -104,35 +104,35 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       {/* Breadcrumbs */}
       <nav
         aria-label="Breadcrumb"
-        className="bg-neutral-50/80 border-b border-neutral-200/80 py-2.5 text-xs text-neutral-500"
+        className="bg-neutral-50/80 border-b border-neutral-200/80 py-2.5 text-xs text-neutral-500 w-full"
       >
         <div className="max-w-7xl mx-auto px-4 flex items-center gap-1.5 flex-wrap">
-          <Link href="/" className="hover:text-[#8A1538] font-medium transition-colors">
+          <Link href="/" className="hover:text-[#8A1538] font-medium transition-colors shrink-0">
             Home
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
           {product.category && (
             <>
               <Link
                 href={`/shop?category=${product.category.slug}`}
-                className="hover:text-[#8A1538] font-medium transition-colors"
+                className="hover:text-[#8A1538] font-medium transition-colors shrink-0"
               >
                 {product.category.name}
               </Link>
-              <ChevronRight className="w-3.5 h-3.5 text-neutral-400" />
+              <ChevronRight className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
             </>
           )}
-          <span className="text-neutral-900 font-semibold truncate max-w-xs">
+          <span className="text-neutral-900 font-semibold truncate max-w-[140px] sm:max-w-xs">
             {product.name}
           </span>
         </div>
       </nav>
 
       {/* Product Content Container */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 py-4 sm:py-6 lg:py-8 w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-4 sm:py-6 lg:py-8 w-full min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start w-full">
           {/* Left Column: Gallery */}
-          <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20">
+          <div className="lg:col-span-5 xl:col-span-5 lg:sticky lg:top-20 w-full min-w-0">
             <ProductGallery
               images={product.product_images}
               productName={product.name}
@@ -140,7 +140,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           {/* Right Column: Information & Checkout Options */}
-          <div className="lg:col-span-7 xl:col-span-7">
+          <div className="lg:col-span-7 xl:col-span-7 w-full min-w-0">
             <ProductDetailsClient
               product={product}
               whatsappNumber={settings.whatsapp_number}
@@ -150,14 +150,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         </div>
 
         {/* Product Details & Specifications Section */}
-        <div className="mt-14 pt-10 border-t border-neutral-200 grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div className="mt-14 pt-10 border-t border-neutral-200 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full">
           {/* Description */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="lg:col-span-7 space-y-4 w-full min-w-0">
             <h3 className="text-lg font-black text-neutral-900 tracking-tight flex items-center gap-2">
               <span className="w-1.5 h-5 bg-[#8A1538] rounded-full" />
               Product Overview
             </h3>
-            <div className="prose prose-neutral text-sm text-neutral-600 leading-relaxed max-w-none">
+            <div className="prose prose-neutral text-sm text-neutral-600 leading-relaxed max-w-none break-words">
               {product.description ? (
                 <p className="whitespace-pre-line">{product.description}</p>
               ) : product.short_description ? (
@@ -172,25 +172,25 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           {/* Specifications Table */}
-          <div className="lg:col-span-5 space-y-4">
+          <div className="lg:col-span-5 space-y-4 w-full min-w-0">
             <h3 className="text-lg font-black text-neutral-900 tracking-tight flex items-center gap-2">
               <span className="w-1.5 h-5 bg-[#8A1538] rounded-full inline-block" />
               Technical Specifications
             </h3>
 
             {Object.keys(specs).length > 0 ? (
-              <div className="rounded-2xl border border-neutral-200 overflow-hidden text-xs">
-                <table className="w-full text-left">
+              <div className="rounded-2xl border border-neutral-200 overflow-hidden text-xs w-full">
+                <table className="w-full text-left table-fixed">
                   <tbody>
                     {Object.entries(specs).map(([key, val], idx) => (
                       <tr
                         key={key}
                         className={idx % 2 === 0 ? "bg-neutral-50" : "bg-white"}
                       >
-                        <td className="py-2.5 px-4 font-bold text-neutral-700 w-1/3 border-b border-neutral-200/60">
+                        <td className="py-2.5 px-3 sm:px-4 font-bold text-neutral-700 w-2/5 border-b border-neutral-200/60 break-words">
                           {key}
                         </td>
-                        <td className="py-2.5 px-4 text-neutral-600 border-b border-neutral-200/60">
+                        <td className="py-2.5 px-3 sm:px-4 text-neutral-600 border-b border-neutral-200/60 break-words">
                           {String(val)}
                         </td>
                       </tr>

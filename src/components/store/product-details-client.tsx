@@ -104,7 +104,7 @@ export function ProductDetailsClient({
   });
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 w-full min-w-0 max-w-full">
       {/* ── Brand + badges row ── */}
       <div className="flex items-center flex-wrap gap-2">
         {product.brand && (
@@ -183,26 +183,26 @@ export function ProductDetailsClient({
       )}
 
       {/* ── Quantity + Add to Cart — same row ── */}
-      <div className="space-y-2">
+      <div className="space-y-2 w-full">
         <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">Quantity</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 w-full">
           {/* Stepper */}
           <div className="flex items-center border border-neutral-200 rounded-xl bg-white overflow-hidden shadow-xs shrink-0">
             <button
               type="button"
               onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="px-2.5 sm:px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors cursor-pointer"
               aria-label="Decrease quantity"
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
-            <span className="w-10 text-center font-bold text-sm text-neutral-900">
+            <span className="w-8 sm:w-10 text-center font-bold text-sm text-neutral-900">
               {quantity}
             </span>
             <button
               type="button"
               onClick={() => setQuantity((q) => q + 1)}
-              className="px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors"
+              className="px-2.5 sm:px-3 py-2.5 text-neutral-600 hover:bg-neutral-100 transition-colors cursor-pointer"
               aria-label="Increase quantity"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -213,7 +213,7 @@ export function ProductDetailsClient({
           <button
             type="button"
             onClick={handleAddToCart}
-            className="py-2.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white shrink-0"
+            className="flex-1 sm:flex-initial py-2.5 px-4 sm:px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm hover:shadow-md bg-[#8A1538] hover:bg-[#700f2c] text-white cursor-pointer"
           >
             {addedToast ? (
               <>
