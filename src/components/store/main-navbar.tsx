@@ -285,8 +285,8 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
   const whatsappCleanNumber = whatsappNumber.replace(/[^\d]/g, "");
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-neutral-100 shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3.5">
+    <header className="sticky top-0 z-40 bg-white border-b border-neutral-100 shadow-2xs w-full max-w-full overflow-x-clip">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 sm:py-3.5 w-full">
         {/* Mobile Header Row (Logo on Left | Cart & Menu on Right) */}
         <div className="flex md:hidden items-center justify-between gap-3 py-0.5">
           {/* Left: Mobile Logo */}

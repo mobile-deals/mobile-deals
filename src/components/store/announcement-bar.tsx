@@ -51,8 +51,8 @@ export function AnnouncementBar({ items }: AnnouncementBarProps) {
   const CurrentMobileIcon = getIconForAnnouncement(finalItems[currentIndex] || finalItems[0]);
 
   return (
-    <div className="w-full bg-[#8A1538] text-white text-[11px] sm:text-xs font-medium border-b border-[#6E132D] select-none">
-      <div className="relative max-w-7xl mx-auto px-4 py-2 flex items-center justify-center min-h-[34px] sm:min-h-[36px]">
+    <div className="w-full max-w-full overflow-x-hidden bg-[#8A1538] text-white text-[11px] sm:text-xs font-medium border-b border-[#6E132D] select-none">
+      <div className="relative max-w-7xl mx-auto px-4 py-2 flex items-center justify-center min-h-[34px] sm:min-h-[36px] w-full">
         {/* Mobile View: Clean Rotating Single Announcement (Centered, Never Cut Off) */}
         <div className="flex md:hidden items-center justify-center w-full px-4 text-center overflow-hidden">
           <div
