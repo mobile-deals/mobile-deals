@@ -724,7 +724,7 @@ export function ShopCatalogClient({
         {/* ── Main Catalog Grid + Desktop Sidebar Layout ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           {/* Desktop Left Filter Sidebar (3 cols) with Fixed Header & Scrollable Body */}
-          <aside className="hidden lg:flex lg:flex-col lg:col-span-3 bg-white rounded-3xl border border-neutral-200/80 shadow-xs sticky top-20 max-h-[calc(100vh-6rem)] overflow-hidden">
+          <aside className="hidden lg:flex lg:flex-col lg:col-span-3 bg-white rounded-3xl border border-neutral-200/80 shadow-xs sticky top-20 z-30 max-h-[calc(100vh-6rem)] overflow-hidden">
             {/* Sticky Header inside sidebar */}
             <div className="flex items-center justify-between p-5 pb-4 border-b border-neutral-200/80 bg-white shrink-0 z-10">
               <div className="flex items-center gap-2 font-black text-neutral-900 text-sm tracking-tight uppercase">
@@ -743,7 +743,7 @@ export function ShopCatalogClient({
             </div>
 
             {/* Scrollable Filter Controls */}
-            <div className="p-5 pt-4 overflow-y-auto flex-1 overscroll-contain pr-4 space-y-6 [scrollbar-width:thin] [scrollbar-color:#8A1538_transparent] hover:[scrollbar-color:#8A1538_#f5f5f5]">
+            <div className="p-5 pt-4 overflow-y-auto flex-1 overscroll-contain pr-4 space-y-6 custom-scrollbar">
               {renderFilterControls()}
             </div>
           </aside>
