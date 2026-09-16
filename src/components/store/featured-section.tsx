@@ -15,6 +15,8 @@ export function FeaturedSection({
 }: FeaturedSectionProps) {
   if (products.length === 0) return null;
 
+  const visibleProducts = products.slice(0, 10);
+
   return (
     <section className="py-6 sm:py-10 md:py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -37,11 +39,27 @@ export function FeaturedSection({
           </Link>
         </div>
 
-        {/* Exact same 5-column desktop, 3-column tablet, 2-column mobile grid matching Today's Best Deals */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          {products.map((prod) => (
-            <ProductCard key={prod.id} product={prod} currency={currency} />
-          ))}
+        {/* Exact same 5-column desktop (max 10), 3-column tablet, 2-column mobile (max 6 on mobile) matching Today's Best Deals */}
+        <div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {visibleProducts.map((prod, idx) => (
+              // On mobile: only show first 6 cards; on sm+ show all up to 10
+              <div key={prod.id} className={idx >= 6 ? "hidden sm:block" : ""}>
+                <ProductCard product={prod} currency={currency} />
+              </div>
+            ))}
+          </div>
+
+          {/* Mobile "View All" — matching Today's Best Deals */}
+          <div className="mt-5 flex justify-center sm:hidden">
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#8A1538] text-white text-sm font-bold rounded-xl shadow hover:bg-[#720e2c] active:scale-95 transition-all"
+            >
+              <span>View All Featured</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </div>
     </section>
