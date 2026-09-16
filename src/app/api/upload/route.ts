@@ -83,7 +83,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, url: data.secure_url });
+    return NextResponse.json({
+      success: true,
+      url: data.secure_url,
+      public_id: data.public_id || null,
+    });
   } catch (err: unknown) {
     console.error("[Upload API Route Exception]", err);
     return NextResponse.json(

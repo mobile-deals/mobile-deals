@@ -7,7 +7,7 @@ import { UploadCloud, Loader2, CheckCircle2, AlertCircle, X, Image as ImageIcon,
 
 interface ImageUploaderProps {
   value: string;
-  onChange: (url: string) => void;
+  onChange: (url: string, publicId?: string | null) => void;
   folder?: string;
   label?: string;
 }
@@ -59,7 +59,7 @@ export function ImageUploader({
         );
       }
 
-      onChange(res.url);
+      onChange(res.url, res.public_id || null);
     } catch (err: unknown) {
       console.error("[Cloudinary Upload Error]", err);
       setError(

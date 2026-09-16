@@ -51,3 +51,33 @@ export function getOptimizedImageUrl(
   // If it's an external URL (e.g. Unsplash), return as-is
   return src;
 }
+
+/**
+ * Extracts the Cloudinary public_id from a URL or returns the public_id if already provided.
+ * Handles various Cloudinary delivery URL patterns including transformations and version tags.
+ * Returns null if the URL is external (non-Cloudinary).
+ */
+export function extractCloudinaryPublicId(urlOrId: string | null | undefined): string | null {
+  if (!urlOrId || typeof urlOrId !== "string") return null;
+  const trimmed = urlOrId.trim();
+  if (!trimmed) return null;
+
+  // If it's a full Cloudinary URL
+  if (trimmed.includes("cloudinary.com")) {
+    const match = trimmed.match(
+      /\/image\/upload\/(?:(?:[a-z]_[a-zA-Z0-9_,-]+,?)+\/)?(?:v\d+\/)?(.+?)(?:\.[a-zA-Z0-9]+)?$/i
+    );
+    if (match && match[1]) {
+      return decodeURIComponent(match[1]);
+    }
+    return null;
+  }
+
+  // If it's an external URL (http/https not on cloudinary.com), do not treat as Cloudinary
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return null;
+  }
+
+  // Raw public_id (strip extension if any)
+  return trimmed.replace(/\.[a-zA-Z0-9]+$/, "");
+}
