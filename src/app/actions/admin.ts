@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SiteSettings } from "@/types/database";
+import {
+  deleteCloudinaryImageAction,
+  deleteMultipleCloudinaryImagesAction,
+} from "./cloudinary";
 
 /* ======================================================================
    PRODUCT ACTIONS
@@ -157,6 +161,33 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
 
     // Update Images if supplied
     if (data.images !== undefined) {
+      // 1. Fetch existing images to identify which ones were removed
+      const { data: existingImages } = await supabase
+        .from("product_images")
+        .select("image_url, cloudinary_public_id")
+        .eq("product_id", id);
+
+      const newImageUrls = new Set(
+        (data.images || []).map((img) => img.image_url.trim()).filter(Boolean)
+      );
+
+      const removedImages = (existingImages || []).filter(
+        (img) => !newImageUrls.has(img.image_url.trim())
+      );
+
+      // 2. Delete removed images from Cloudinary
+      if (removedImages.length > 0) {
+        const toDelete = removedImages.map(
+          (img) => img.cloudinary_public_id || img.image_url
+        );
+        try {
+          await deleteMultipleCloudinaryImagesAction(toDelete);
+        } catch (cloudErr) {
+          console.warn("[updateProductAction] Cloudinary purge warning:", cloudErr);
+        }
+      }
+
+      // 3. Delete existing DB records and insert updated ones
       const { error: delImgErr } = await supabase.from("product_images").delete().eq("product_id", id);
       if (delImgErr) throw delImgErr;
 
@@ -214,6 +245,45 @@ export async function updateProductAction(id: string, data: Partial<ProductInput
 export async function deleteProductAction(id: string) {
   try {
     const supabase = createAdminClient();
+
+    // 1. Find all product images to purge from Cloudinary
+    const { data: productImages } = await supabase
+      .from("product_images")
+      .select("image_url, cloudinary_public_id")
+      .eq("product_id", id);
+
+    // 2. Fetch product specs to check if gift_image exists
+    const { data: product } = await supabase
+      .from("products")
+      .select("specifications")
+      .eq("id", id)
+      .maybeSingle();
+
+    const imagesToPurge: string[] = [];
+    if (productImages && productImages.length > 0) {
+      for (const img of productImages) {
+        if (img.cloudinary_public_id) {
+          imagesToPurge.push(img.cloudinary_public_id);
+        } else if (img.image_url) {
+          imagesToPurge.push(img.image_url);
+        }
+      }
+    }
+
+    if (product?.specifications?.gift_image) {
+      imagesToPurge.push(product.specifications.gift_image);
+    }
+
+    // 3. Delete all Cloudinary assets
+    if (imagesToPurge.length > 0) {
+      try {
+        await deleteMultipleCloudinaryImagesAction(imagesToPurge);
+      } catch (cloudErr) {
+        console.warn("[deleteProductAction] Cloudinary purge warning:", cloudErr);
+      }
+    }
+
+    // 4. Delete the product from Supabase (cascades to product_images and product_variants)
     const { error } = await supabase.from("products").delete().eq("id", id);
     if (error) throw error;
 
@@ -291,6 +361,22 @@ export async function updateBrandAction(
 export async function deleteBrandAction(id: string) {
   try {
     const supabase = createAdminClient();
+
+    // Purge brand logo from Cloudinary
+    const { data: brand } = await supabase
+      .from("brands")
+      .select("logo_url")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (brand?.logo_url) {
+      try {
+        await deleteCloudinaryImageAction(brand.logo_url);
+      } catch (err) {
+        console.warn("[deleteBrandAction] Cloudinary purge warning:", err);
+      }
+    }
+
     const { error } = await supabase.from("brands").delete().eq("id", id);
     if (error) throw error;
 
@@ -385,6 +471,22 @@ export async function updateCategoryAction(
 export async function deleteCategoryAction(id: string) {
   try {
     const supabase = createAdminClient();
+
+    // Purge category image from Cloudinary
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("image_url")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (cat?.image_url) {
+      try {
+        await deleteCloudinaryImageAction(cat.image_url);
+      } catch (err) {
+        console.warn("[deleteCategoryAction] Cloudinary purge warning:", err);
+      }
+    }
+
     const { error } = await supabase.from("categories").delete().eq("id", id);
     if (error) throw error;
 
@@ -477,6 +579,29 @@ export async function updateBannerAction(
 export async function deleteBannerAction(id: string) {
   try {
     const supabase = createAdminClient();
+
+    // Purge banner images from Cloudinary
+    const { data: banner } = await supabase
+      .from("banners")
+      .select("desktop_image_url, mobile_image_url, cloudinary_public_id")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (banner) {
+      const bannerImgs = [
+        banner.cloudinary_public_id,
+        banner.desktop_image_url,
+        banner.mobile_image_url,
+      ].filter(Boolean) as string[];
+      if (bannerImgs.length > 0) {
+        try {
+          await deleteMultipleCloudinaryImagesAction(bannerImgs);
+        } catch (err) {
+          console.warn("[deleteBannerAction] Cloudinary purge warning:", err);
+        }
+      }
+    }
+
     const { error } = await supabase.from("banners").delete().eq("id", id);
     if (error) throw error;
 

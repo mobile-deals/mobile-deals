@@ -10,6 +10,7 @@ import { ProductDetailsClient } from "@/components/store/product-details-client"
 
 import { Footer } from "@/components/store/footer";
 import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
+import { ProductSpecTabs } from "@/components/store/product-spec-tabs";
 import { ChevronRight } from "lucide-react";
 
 interface ProductPageProps {
@@ -149,62 +150,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Product Details & Specifications Section */}
-        <div className="mt-14 pt-10 border-t border-neutral-200 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full">
-          {/* Description */}
-          <div className="lg:col-span-7 space-y-4 w-full min-w-0">
-            <h3 className="text-lg font-black text-neutral-900 tracking-tight flex items-center gap-2">
-              <span className="w-1.5 h-5 bg-[#8A1538] rounded-full" />
-              Product Overview
-            </h3>
-            <div className="prose prose-neutral text-sm text-neutral-600 leading-relaxed max-w-none break-words">
-              {product.description ? (
-                <p className="whitespace-pre-line">{product.description}</p>
-              ) : product.short_description ? (
-                <p className="whitespace-pre-line">{product.short_description}</p>
-              ) : (
-                <p>
-                  Genuine {product.name} available with fast doorstep delivery across Qatar.
-                  Backed by our 100% authenticity guarantee and Cash on Delivery option.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Specifications Table */}
-          <div className="lg:col-span-5 space-y-4 w-full min-w-0">
-            <h3 className="text-lg font-black text-neutral-900 tracking-tight flex items-center gap-2">
-              <span className="w-1.5 h-5 bg-[#8A1538] rounded-full inline-block" />
-              Technical Specifications
-            </h3>
-
-            {Object.keys(specs).length > 0 ? (
-              <div className="rounded-2xl border border-neutral-200 overflow-hidden text-xs w-full">
-                <table className="w-full text-left table-fixed">
-                  <tbody>
-                    {Object.entries(specs).map(([key, val], idx) => (
-                      <tr
-                        key={key}
-                        className={idx % 2 === 0 ? "bg-neutral-50" : "bg-white"}
-                      >
-                        <td className="py-2.5 px-3 sm:px-4 font-bold text-neutral-700 w-2/5 border-b border-neutral-200/60 break-words">
-                          {key}
-                        </td>
-                        <td className="py-2.5 px-3 sm:px-4 text-neutral-600 border-b border-neutral-200/60 break-words">
-                          {String(val)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="p-4 rounded-xl bg-neutral-50 text-neutral-500 text-xs border border-neutral-200">
-                Official retail package specs. For in-depth variant queries, reach our team on WhatsApp.
-              </div>
-            )}
-          </div>
-        </div>
+        {/* Product Details & Specifications — Tabbed Layout */}
+        <ProductSpecTabs
+          description={product.description}
+          shortDescription={product.short_description}
+          productName={product.name}
+          brandName={product.brand?.name}
+          categoryName={product.category?.name}
+          warranty={product.warranty}
+          whatsappNumber={settings.whatsapp_number}
+          specs={specs}
+        />
       </main>
 
 

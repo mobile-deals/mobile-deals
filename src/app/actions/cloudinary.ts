@@ -1,6 +1,7 @@
 "use server";
 
 import crypto from "crypto";
+import { extractCloudinaryPublicId } from "@/lib/cloudinary";
 
 export interface CloudinarySignatureResult {
   signature: string;
@@ -133,3 +134,84 @@ export async function getCloudinaryUploadSignature(
     return { success: false, error: (err as Error).message };
   }
 }
+
+
+/**
+ * Deletes an image from Cloudinary using Cloudinary's Destroy API.
+ */
+export async function deleteCloudinaryImageAction(
+  urlOrPublicId: string
+): Promise<{ success: boolean; result?: string; error?: string }> {
+  try {
+    const publicId = extractCloudinaryPublicId(urlOrPublicId);
+    if (!publicId) {
+      // Not a Cloudinary asset or empty
+      return { success: true, result: "skipped" };
+    }
+
+    const cloudName =
+      process.env.CLOUDINARY_CLOUD_NAME ||
+      process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const apiKey =
+      process.env.CLOUDINARY_API_KEY ||
+      process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      console.warn("[Cloudinary Delete] Missing credentials in environment, skipping delete.");
+      return { success: false, error: "Cloudinary credentials missing." };
+    }
+
+    const timestamp = Math.round(Date.now() / 1000);
+    const toSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash("sha1").update(toSign).digest("hex");
+
+    const body = new URLSearchParams();
+    body.append("public_id", publicId);
+    body.append("timestamp", String(timestamp));
+    body.append("api_key", apiKey);
+    body.append("signature", signature);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/destroy`, {
+      method: "POST",
+      body: body,
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.warn("[Cloudinary Delete API Error]", data);
+      return { success: false, error: data.error?.message || "Failed to destroy image" };
+    }
+
+    return { success: true, result: data.result };
+  } catch (err: unknown) {
+    console.error("[Cloudinary Delete Exception]", err);
+    return { success: false, error: (err as Error).message };
+  }
+}
+
+/**
+ * Deletes multiple images from Cloudinary concurrently.
+ */
+export async function deleteMultipleCloudinaryImagesAction(
+  urlsOrPublicIds: (string | null | undefined)[]
+): Promise<{ success: boolean; deletedCount: number }> {
+  const validTargets = urlsOrPublicIds
+    .filter((u): u is string => typeof u === "string" && u.trim().length > 0)
+    .map((u) => u.trim());
+
+  if (validTargets.length === 0) {
+    return { success: true, deletedCount: 0 };
+  }
+
+  const results = await Promise.allSettled(
+    validTargets.map((target) => deleteCloudinaryImageAction(target))
+  );
+
+  const deletedCount = results.filter(
+    (r) => r.status === "fulfilled" && r.value.success && r.value.result === "ok"
+  ).length;
+
+  return { success: true, deletedCount };
+}
+
