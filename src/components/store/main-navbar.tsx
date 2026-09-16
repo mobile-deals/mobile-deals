@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, User, Heart, ShoppingCart, Menu, X, ChevronRight, Sparkles, Loader2, ArrowRight, Tag, ShoppingBag } from "lucide-react";
@@ -46,6 +47,11 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
   const [showDesktopDropdown, setShowDesktopDropdown] = useState(false);
   const [showMobileDropdown, setShowMobileDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   const desktopSearchRef = React.useRef<HTMLDivElement>(null);
   const mobileSearchRef = React.useRef<HTMLDivElement>(null);
@@ -101,6 +107,33 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Lock background screen scrolling when mobile menu drawer is open
+  React.useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setMobileMenuOpen(false);
+        }
+      };
+      window.addEventListener("keydown", handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+        document.body.style.touchAction = originalTouchAction;
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [mobileMenuOpen]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -461,9 +494,9 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
         </div>
       </div>
 
-      {/* Mobile Slide-in Drawer on RIGHT Side */}
-      {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex justify-end">
+      {/* Mobile Slide-in Drawer on RIGHT Side - Portaled directly to document.body at z-[9999] so it is 100% on top of the bottom navbar */}
+      {isMounted && mobileMenuOpen && createPortal(
+        <div className="fixed inset-0 z-[9999] md:hidden flex justify-end">
           {/* Dark Backdrop Overlay */}
           <div
             onClick={() => setMobileMenuOpen(false)}
@@ -471,85 +504,91 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
           />
 
           {/* Right Sidebar Menu Panel */}
-          <div className="relative z-50 w-72 sm:w-80 h-full bg-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-300">
+          <div className="relative z-[10000] w-[290px] sm:w-80 h-[100dvh] max-h-[100dvh] bg-white shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
             {/* Sidebar Header */}
-            <div>
-              <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/80">
-                <Logo size="md" />
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-full bg-neutral-200/70 hover:bg-neutral-300 text-neutral-700 transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Navigation Links */}
-              <div className="p-4 space-y-1.5 text-sm">
-                <Link
-                  href="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
-                >
-                  <span>Home</span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400" />
-                </Link>
-                <Link
-                  href="/shop"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-[#8A1538] bg-[#8A1538]/5 hover:bg-[#8A1538]/10 transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <ShoppingBag className="w-4 h-4 text-[#8A1538]" />
-                    <span>Shop</span>
-                  </span>
-                  <ChevronRight className="w-4 h-4 text-[#8A1538]" />
-                </Link>
-                <Link
-                  href="/#categories"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
-                >
-                  <span>All Categories</span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400" />
-                </Link>
-                <Link
-                  href="/#deals"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <span>Today&apos;s Best Deals</span>
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  </span>
-                  <ChevronRight className="w-4 h-4 text-neutral-400" />
-                </Link>
-                <Link
-                  href="/cart"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
-                >
-                  <span>Shopping Cart</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#8A1538] text-white text-xs font-bold">
-                    {totalItems}
-                  </span>
-                </Link>
-              </div>
+            <div className="shrink-0 p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/80">
+              <Logo size="md" />
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-full bg-neutral-200/70 hover:bg-neutral-300 text-neutral-700 transition-colors"
+                aria-label="Close menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Sidebar Bottom WhatsApp Action */}
-            <div className="p-4 border-t border-neutral-100 bg-neutral-50/50 space-y-2">
+            {/* Navigation Links - Scrollable middle area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-1.5 text-sm overscroll-contain">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
+              >
+                <span>Home</span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+              <Link
+                href="/shop"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-[#8A1538] bg-[#8A1538]/5 hover:bg-[#8A1538]/10 transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <ShoppingBag className="w-4 h-4 text-[#8A1538]" />
+                  <span>Shop</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-[#8A1538]" />
+              </Link>
+              <Link
+                href="/#categories"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
+              >
+                <span>All Categories</span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+              <Link
+                href="/#deals"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <span>Today&apos;s Best Deals</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                </span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+              <Link
+                href="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-bold text-neutral-900 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
+              >
+                <span>Shopping Cart</span>
+                <span className="px-2 py-0.5 rounded-full bg-[#8A1538] text-white text-xs font-bold">
+                  {totalItems}
+                </span>
+              </Link>
+              <Link
+                href="/service-enquiry"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-between py-2.5 px-3 rounded-xl font-medium text-neutral-700 hover:bg-[#8A1538]/5 hover:text-[#8A1538] transition-colors"
+              >
+                <span>Service & Repair</span>
+                <ChevronRight className="w-4 h-4 text-neutral-400" />
+              </Link>
+            </div>
+
+            {/* Sidebar Bottom WhatsApp Action - Safe area padding & fully visible above phone bottom */}
+            <div className="shrink-0 p-4 pb-8 border-t border-neutral-100 bg-neutral-50/90 space-y-2">
               <a
                 href={`https://wa.me/${whatsappCleanNumber}?text=${encodeURIComponent(
                   "Hello Mobile Deals 👋 I would like to place an order or inquire about products."
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366] text-white font-bold text-xs shadow-sm hover:bg-[#20ba59] transition-all"
+                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-[#25D366] text-white font-bold text-xs shadow-sm hover:bg-[#20ba59] active:scale-[0.98] transition-all"
               >
-                <WhatsAppIcon className="w-4 h-4 fill-white" />
+                <WhatsAppIcon className="w-4 h-4 fill-white shrink-0" />
                 <span>Order on WhatsApp</span>
               </a>
               <p className="text-[11px] text-center text-neutral-400 font-medium">
@@ -557,7 +596,8 @@ export function MainNavbar({ whatsappNumber = "+97455000000", currency = "QAR" }
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
