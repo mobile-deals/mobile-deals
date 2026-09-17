@@ -8,5 +8,5 @@ interface CategoryPageProps {
 
 export default async function CategoryDetailPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  redirect(`/shop?category=${slug}`);
+  redirect(`/shop?category=${encodeURIComponent(slug)}`);
 }

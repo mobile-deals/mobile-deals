@@ -115,7 +115,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           {product.category && (
             <>
               <Link
-                href={`/shop?category=${product.category.slug}`}
+                href={`/shop?category=${encodeURIComponent(product.category.slug)}`}
                 className="hover:text-[#8A1538] font-medium transition-colors shrink-0"
               >
                 {product.category.name}

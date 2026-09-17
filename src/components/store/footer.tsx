@@ -77,7 +77,7 @@ export function Footer({
                 {displayCategories.map((cat) => (
                   <li key={cat.slug || cat.name}>
                     <Link
-                      href={`/shop?category=${cat.slug}`}
+                      href={`/shop?category=${encodeURIComponent(cat.slug)}`}
                       className="hover:text-white transition-colors block py-0.5 md:py-0"
                     >
                       {cat.name}
