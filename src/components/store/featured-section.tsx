@@ -44,7 +44,7 @@ export function FeaturedSection({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {visibleProducts.map((prod, idx) => (
               // On mobile: only show first 6 cards; on sm+ show all up to 10
-              <div key={prod.id} className={idx >= 6 ? "hidden sm:block" : ""}>
+              <div key={prod.id} className={`h-full ${idx >= 6 ? "hidden sm:block" : ""}`}>
                 <ProductCard product={prod} currency={currency} />
               </div>
             ))}

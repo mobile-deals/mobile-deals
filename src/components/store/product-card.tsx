@@ -78,10 +78,10 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
   };
 
   return (
-    <div className="group relative flex flex-col rounded-2xl sm:rounded-3xl bg-white border border-neutral-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] hover:border-[#8A1538]/25 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+    <div className="group relative flex flex-col h-full rounded-2xl sm:rounded-3xl bg-white border border-neutral-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.03)] hover:shadow-[0_14px_30px_rgba(0,0,0,0.08)] hover:border-[#8A1538]/25 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
 
       {/* ── Image area with overlaid badge & wishlist ── */}
-      <Link href={`/products/${product.slug}`} className="block relative">
+      <Link href={`/products/${product.slug}`} className="block relative shrink-0">
         <div className="relative w-full aspect-square bg-gradient-to-b from-neutral-50/80 via-white to-neutral-50/40">
           {primaryImage ? (
             <Image
@@ -159,36 +159,40 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* ── Card body — always same structure regardless of gift ── */}
+      {/* ── Card body — compact, single-line title with dots (...) & natural tight spacing ── */}
       <div className="flex flex-col flex-1 p-3 sm:p-4">
         {/* Brand */}
         {product.brand?.name && (
-          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-0.5">
+          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-neutral-400 mb-0.5 truncate">
             {product.brand.name}
           </div>
         )}
 
-        {/* Title */}
+        {/* Title — Single line with dots (...) */}
         <Link
           href={`/products/${product.slug}`}
           className="block group-hover:text-[#8A1538] transition-colors mb-1"
         >
-          <h3 className="text-xs sm:text-sm font-bold text-neutral-900 line-clamp-2 leading-snug">
+          <h3
+            className="text-xs sm:text-sm font-bold text-neutral-900 truncate"
+            title={product.name}
+          >
             {product.name}
           </h3>
         </Link>
 
-        {/* Short specs */}
-        {product.short_description && (
-          <p className="text-[10px] sm:text-xs text-neutral-500 line-clamp-1 font-normal mb-2">
-            {product.short_description}
-          </p>
-        )}
+        {/* Short description / specs — Single line with dots (...) */}
+        <p
+          className="text-[10px] sm:text-xs text-neutral-500 truncate font-normal mb-2"
+          title={product.short_description || ""}
+        >
+          {product.short_description || "\u00A0"}
+        </p>
 
-        {/* Spacer pushes price + button to bottom */}
+        {/* Flexible spacer pushes price + add to cart button to card bottom */}
         <div className="flex-1" />
 
-        {/* Pricing */}
+        {/* Pricing block */}
         <div className="flex items-baseline gap-1.5 flex-wrap mb-3">
           <span className="text-sm sm:text-base font-black text-[#8A1538] tracking-tight">
             {currency} {product.price.toLocaleString()}
@@ -201,7 +205,7 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
             )}
         </div>
 
-        {/* Add to Cart */}
+        {/* Add to Cart button */}
         <button
           type="button"
           onClick={handleAddToCart}
