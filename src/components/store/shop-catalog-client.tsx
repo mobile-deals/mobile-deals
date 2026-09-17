@@ -143,15 +143,69 @@ export function ShopCatalogClient({
     }
   }, [mobileFilterOpen]);
 
+/**
+ * Normalizes strings into canonical URL-friendly slugs for robust category matching.
+ */
+function slugify(text: string = ""): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function matchCategoryOrSlug(
+  cat: Category | { id: string; name: string; slug: string },
+  target: string
+): boolean {
+  if (!cat || !target) return false;
+  const rawTarget = target.trim();
+  const decodedTarget = decodeURIComponent(rawTarget).trim();
+  const targetLower = decodedTarget.toLowerCase();
+  const targetSlug = slugify(decodedTarget);
+
+  if (cat.id && cat.id.toLowerCase() === targetLower) return true;
+  if (cat.slug && (cat.slug.toLowerCase() === targetLower || cat.slug.toLowerCase() === rawTarget.toLowerCase())) return true;
+  if (cat.name && (cat.name.toLowerCase() === targetLower || cat.name.toLowerCase() === rawTarget.toLowerCase())) return true;
+
+  if (cat.slug && slugify(cat.slug) === targetSlug) return true;
+  if (cat.name && slugify(cat.name) === targetSlug) return true;
+
+  if (targetSlug.includes("mobile") && targetSlug.includes("tablet")) {
+    const catSlugNorm = slugify(cat.slug || "");
+    const catNameNorm = slugify(cat.name || "");
+    if (
+      (catSlugNorm.includes("mobile") && catSlugNorm.includes("tablet")) ||
+      (catNameNorm.includes("mobile") && catNameNorm.includes("tablet"))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
   // Pre-calculate Category product counts
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    initialProducts.forEach((p) => {
-      if (p.category_id) counts[p.category_id] = (counts[p.category_id] || 0) + 1;
-      if (p.category?.slug) counts[p.category.slug] = (counts[p.category.slug] || 0) + 1;
+    categories.forEach((cat) => {
+      let count = 0;
+      initialProducts.forEach((p) => {
+        if (p.category_id && p.category_id === cat.id) {
+          count++;
+        } else if (p.category && matchCategoryOrSlug(p.category, cat.slug || cat.name || cat.id)) {
+          count++;
+        } else if (p.category_id && p.category_id.toLowerCase() === cat.id.toLowerCase()) {
+          count++;
+        }
+      });
+      counts[cat.id] = count;
+      if (cat.slug) counts[cat.slug] = count;
     });
     return counts;
-  }, [initialProducts]);
+  }, [categories, initialProducts]);
 
   // Pre-calculate Brand product counts
   const brandCounts = useMemo(() => {
@@ -165,9 +219,25 @@ export function ShopCatalogClient({
 
   // Toggle Category Selection
   const toggleCategory = (slugOrId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(slugOrId) ? prev.filter((c) => c !== slugOrId) : [...prev, slugOrId]
-    );
+    setSelectedCategories((prev) => {
+      const isSelected = prev.some((selected) => {
+        if (selected === slugOrId) return true;
+        const catObj = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
+        if (catObj && matchCategoryOrSlug(catObj, selected)) return true;
+        return false;
+      });
+
+      if (isSelected) {
+        return prev.filter((selected) => {
+          if (selected === slugOrId) return false;
+          const catObj = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
+          if (catObj && matchCategoryOrSlug(catObj, selected)) return false;
+          return true;
+        });
+      } else {
+        return [...prev, slugOrId];
+      }
+    });
   };
 
   // Toggle Brand Selection
@@ -218,9 +288,15 @@ export function ShopCatalogClient({
 
         // 2. Category Filter
         if (selectedCategories.length > 0) {
-          const catMatch =
-            (product.category_id && selectedCategories.includes(product.category_id)) ||
-            (product.category?.slug && selectedCategories.includes(product.category.slug));
+          const catMatch = selectedCategories.some((selected) => {
+            if (product.category_id && product.category_id.toLowerCase() === selected.toLowerCase()) return true;
+            if (product.category && matchCategoryOrSlug(product.category, selected)) return true;
+            if (product.category_id) {
+              const foundCat = categories.find((c) => c.id === product.category_id);
+              if (foundCat && matchCategoryOrSlug(foundCat, selected)) return true;
+            }
+            return false;
+          });
           if (!catMatch) return false;
         }
 
@@ -328,8 +404,7 @@ export function ShopCatalogClient({
           {openSections.categories && (
             <div className="space-y-1.5 pt-1">
               {categories.map((cat) => {
-                const isSelected =
-                  selectedCategories.includes(cat.id) || selectedCategories.includes(cat.slug);
+                const isSelected = selectedCategories.some((selected) => matchCategoryOrSlug(cat, selected));
                 const count = categoryCounts[cat.id] || categoryCounts[cat.slug] || 0;
 
                 return (
@@ -667,13 +742,13 @@ export function ShopCatalogClient({
             )}
 
             {selectedCategories.map((catIdOrSlug) => {
-              const cat = categories.find((c) => c.id === catIdOrSlug || c.slug === catIdOrSlug);
+              const cat = categories.find((c) => matchCategoryOrSlug(c, catIdOrSlug));
               return (
                 <span
                   key={catIdOrSlug}
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-neutral-200 text-neutral-800 text-xs font-semibold"
                 >
-                  <span>{cat?.name || catIdOrSlug}</span>
+                  <span>{cat?.name || decodeURIComponent(catIdOrSlug)}</span>
                   <X className="w-3 h-3 cursor-pointer" onClick={() => toggleCategory(catIdOrSlug)} />
                 </span>
               );
