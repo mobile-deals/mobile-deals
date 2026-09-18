@@ -118,6 +118,11 @@ export function Footer({
             >
               <ul className="space-y-2 text-neutral-400">
                 <li>
+                  <Link href="/about" className="hover:text-white transition-colors block py-0.5 md:py-0">
+                    About Us
+                  </Link>
+                </li>
+                <li>
                   <Link href="/shop" className="hover:text-white transition-colors block py-0.5 md:py-0">
                     Shop Catalog
                   </Link>
@@ -128,25 +133,15 @@ export function Footer({
                   </Link>
                 </li>
                 <li>
-                  <Link href="/service-enquiry" className="hover:text-white transition-colors block py-0.5 md:py-0">
-                    Service &amp; Maintenance
-                  </Link>
-                </li>
-                <li>
                   <Link href="/cart" className="hover:text-white transition-colors block py-0.5 md:py-0">
                     My Shopping Cart
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/checkout" className="hover:text-white transition-colors block py-0.5 md:py-0">
-                    Cash on Delivery Checkout
                   </Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Col 4: Customer Care Accordion on Mobile */}
+          {/* Col 4: Customer Policies Accordion on Mobile */}
           <div className="border-b border-neutral-800/80 md:border-none pb-3 md:pb-0">
             <button
               type="button"
@@ -154,7 +149,7 @@ export function Footer({
               className="w-full py-2 md:py-0 flex items-center justify-between text-left font-bold text-white text-sm tracking-wider uppercase md:cursor-default"
               aria-expanded={!!openSections["customerCare"]}
             >
-              <span>Customer Care</span>
+              <span>Customer Policies</span>
               <ChevronDown
                 className={`w-4 h-4 text-neutral-400 transition-transform duration-200 md:hidden ${
                   openSections["customerCare"] ? "rotate-180 text-white" : ""
@@ -168,23 +163,18 @@ export function Footer({
             >
               <ul className="space-y-2 text-neutral-400">
                 <li>
-                  <Link href="/about" className="hover:text-white transition-colors block py-0.5 md:py-0">
-                    About Us
-                  </Link>
-                </li>
-                <li>
                   <Link href="/privacy-policy" className="hover:text-white transition-colors block py-0.5 md:py-0">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/service-enquiry" className="hover:text-white transition-colors block py-0.5 md:py-0">
-                    Warranty &amp; Returns
+                  <Link href="/return-policy" className="hover:text-white transition-colors block py-0.5 md:py-0">
+                    Return Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/checkout" className="hover:text-white transition-colors block py-0.5 md:py-0">
-                    Cash on Delivery Policy
+                  <Link href="/service-enquiry" className="hover:text-white transition-colors block py-0.5 md:py-0">
+                    Service &amp; Maintenance
                   </Link>
                 </li>
                 <li>
