@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Service Enquiry & Technical Support | Mobile Deals Qatar",
   description:
     "Request device repair, warranty inspection, product maintenance, and genuine replacement parts across Qatar. Connect directly with our certified technical support team on WhatsApp.",
+  alternates: {
+    canonical: "https://mobiledeals.qa/service-enquiry",
+  },
 };
 
 export const revalidate = 60;

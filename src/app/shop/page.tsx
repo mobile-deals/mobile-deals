@@ -13,6 +13,16 @@ export const metadata: Metadata = {
   title: "Shop | Mobile Deals Qatar",
   description:
     "Explore our complete collection of smartphones, tablets, laptops, accessories, and exclusive Qatar deals. Filter by category, brand, price, and special offers with fast delivery across Qatar.",
+  alternates: {
+    canonical: "https://mobiledeals.qa/shop",
+  },
+  openGraph: {
+    title: "Shop All Tech Deals | Mobile Deals Qatar",
+    description:
+      "Browse smartphones, earphones, chargers, and mobile accessories with Cash on Delivery in Qatar.",
+    url: "https://mobiledeals.qa/shop",
+    type: "website",
+  },
 };
 
 export const revalidate = 60; // ISR cache 60 seconds

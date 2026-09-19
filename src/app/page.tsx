@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 import {
   getBanners,
   getCategories,
@@ -21,6 +22,27 @@ import { MobileBottomNav } from "@/components/store/mobile-bottom-nav";
 // Dynamic rendering ensures fresh data while avoiding client-side waterfalls
 export const revalidate = 60; // ISR cache 60 seconds
 
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://mobiledeals.qa",
+  },
+  openGraph: {
+    title: "Mobile Deals Qatar | Best Tech Deals & Cash on Delivery",
+    description:
+      "Qatar's premier store for mobiles, electronics, smartwatches, accessories and gadgets. Unbeatable prices, 100% genuine tech, Cash on Delivery nationwide.",
+    url: "https://mobiledeals.qa",
+    type: "website",
+    images: [
+      {
+        url: "https://mobiledeals.qa/fav-icon.png",
+        alt: "Mobile Deals Qatar",
+        width: 512,
+        height: 512,
+      },
+    ],
+  },
+};
+
 export default async function HomePage() {
   // Efficient parallel data fetching: single round-trip execution
   const [categories, banners, bestDeals, todayDeals, featuredProducts, settings] =
@@ -34,8 +56,53 @@ export default async function HomePage() {
     ]);
 
 
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "OnlineStore",
+    name: "Mobile Deals Qatar",
+    url: "https://mobiledeals.qa",
+    logo: "https://mobiledeals.qa/fav-icon.png",
+    description:
+      "Qatar's premier online destination for mobile phones, electronics, smartwatches, and accessories with Cash on Delivery nationwide.",
+    telephone: settings.whatsapp_number || "+97455000000",
+    email: settings.store_email || "support@mobiledeals.qa",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Doha",
+      addressCountry: "QA",
+    },
+    currenciesAccepted: "QAR",
+    paymentAccepted: "Cash, Cash on Delivery",
+    priceRange: "$$",
+  };
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Mobile Deals Qatar",
+    url: "https://mobiledeals.qa",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://mobiledeals.qa/search?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <main className="min-h-screen flex flex-col bg-white">
+      {/* Inject Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+
       {/* 1. Top Announcement Bar */}
       <AnnouncementBar items={settings.announcement_bar?.items} />
 

@@ -28,6 +28,10 @@ interface ShopCatalogClientProps {
   categories: Category[];
   brands: Brand[];
   currency?: string;
+  /** Slug of a category to pre-select (used by /categories/[slug] route) */
+  initialCategory?: string;
+  /** Display name of that category, used for H1/breadcrumb */
+  initialCategoryName?: string;
 }
 
 type SortOption = "featured" | "price_asc" | "price_desc" | "discount" | "newest";
@@ -45,6 +49,8 @@ export function ShopCatalogClient({
   categories = [],
   brands = [],
   currency = "QAR",
+  initialCategory,
+  initialCategoryName,
 }: ShopCatalogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,7 +61,10 @@ export function ShopCatalogClient({
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
     const cat = searchParams.get("category");
-    return cat ? cat.split(",") : [];
+    if (cat) return cat.split(",");
+    // Pre-select the category when coming from /categories/[slug]
+    if (initialCategory) return [initialCategory];
+    return [];
   });
   const [selectedBrands, setSelectedBrands] = useState<string[]>(() => {
     const b = searchParams.get("brand");
@@ -116,20 +125,40 @@ export function ShopCatalogClient({
 
   // Sync filters to URL query string without reloading page
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchQuery.trim()) params.set("search", searchQuery.trim());
-    if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","));
-    if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
-    if (selectedDealType !== "all") params.set("deal", selectedDealType);
-    if (maxPrice && Number(maxPrice) < maxCatalogPrice) params.set("max_price", maxPrice);
-    if (inStockOnly) params.set("in_stock", "true");
-    if (sortBy !== "featured") params.set("sort", sortBy);
+    const isCategoryRoute = pathname.startsWith("/categories/");
 
-    const queryStr = params.toString();
-    const targetUrl = queryStr ? `${pathname}?${queryStr}` : pathname;
-    startTransition(() => {
-      window.history.replaceState(null, "", targetUrl);
-    });
+    if (isCategoryRoute) {
+      // On category route, sync only secondary filters (brand, price, etc.) into URL params
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
+      if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
+      if (selectedDealType !== "all") params.set("deal", selectedDealType);
+      if (maxPrice && Number(maxPrice) < maxCatalogPrice) params.set("max_price", maxPrice);
+      if (inStockOnly) params.set("in_stock", "true");
+      if (sortBy !== "featured") params.set("sort", sortBy);
+
+      const queryStr = params.toString();
+      const targetUrl = queryStr ? `${pathname}?${queryStr}` : pathname;
+      startTransition(() => {
+        window.history.replaceState(null, "", targetUrl);
+      });
+    } else {
+      // On /shop route, sync all filters including categories
+      const params = new URLSearchParams();
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
+      if (selectedCategories.length > 0) params.set("category", selectedCategories.join(","));
+      if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
+      if (selectedDealType !== "all") params.set("deal", selectedDealType);
+      if (maxPrice && Number(maxPrice) < maxCatalogPrice) params.set("max_price", maxPrice);
+      if (inStockOnly) params.set("in_stock", "true");
+      if (sortBy !== "featured") params.set("sort", sortBy);
+
+      const queryStr = params.toString();
+      const targetUrl = queryStr ? `${pathname}?${queryStr}` : pathname;
+      startTransition(() => {
+        window.history.replaceState(null, "", targetUrl);
+      });
+    }
   }, [searchQuery, selectedCategories, selectedBrands, selectedDealType, maxPrice, maxCatalogPrice, inStockOnly, sortBy, pathname]);
 
   // Lock background body scroll when mobile filter drawer is open
@@ -219,25 +248,42 @@ function matchCategoryOrSlug(
 
   // Toggle Category Selection
   const toggleCategory = (slugOrId: string) => {
-    setSelectedCategories((prev) => {
-      const isSelected = prev.some((selected) => {
-        if (selected === slugOrId) return true;
-        const catObj = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
-        if (catObj && matchCategoryOrSlug(catObj, selected)) return true;
-        return false;
-      });
+    const targetCat = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
+    const targetSlug = targetCat?.slug || slugOrId;
 
-      if (isSelected) {
-        return prev.filter((selected) => {
+    const isSelected = selectedCategories.some((selected) => {
+      if (selected === slugOrId) return true;
+      const catObj = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
+      if (catObj && matchCategoryOrSlug(catObj, selected)) return true;
+      return false;
+    });
+
+    const next = isSelected
+      ? selectedCategories.filter((selected) => {
           if (selected === slugOrId) return false;
           const catObj = categories.find((c) => c.id === slugOrId || c.slug === slugOrId);
           if (catObj && matchCategoryOrSlug(catObj, selected)) return false;
           return true;
-        });
+        })
+      : [...selectedCategories, targetSlug];
+
+    setSelectedCategories(next);
+
+    // If user is currently on /categories/[slug]
+    if (pathname.startsWith("/categories/")) {
+      if (next.length === 0) {
+        // Cleared category -> Go to /shop
+        router.push("/shop");
+      } else if (next.length === 1) {
+        // Switched category -> Go to new /categories/[slug]
+        const singleCat = categories.find((c) => matchCategoryOrSlug(c, next[0]));
+        const singleSlug = singleCat?.slug || next[0];
+        router.push(`/categories/${singleSlug}`);
       } else {
-        return [...prev, slugOrId];
+        // Multiple categories selected -> Go to /shop?category=...
+        router.push(`/shop?category=${encodeURIComponent(next.join(","))}`);
       }
-    });
+    }
   };
 
   // Toggle Brand Selection
@@ -256,6 +302,12 @@ function matchCategoryOrSlug(
     setMaxPrice("");
     setInStockOnly(false);
     setSortBy("featured");
+
+    if (pathname.startsWith("/categories/")) {
+      router.push("/shop");
+    } else {
+      window.history.replaceState(null, "", "/shop");
+    }
   };
 
   // Active filters count for badge
@@ -602,7 +654,15 @@ function matchCategoryOrSlug(
             Home
           </Link>
           <span>/</span>
-          <span className="font-bold text-neutral-900">Shop</span>
+          {initialCategoryName ? (
+            <>
+              <Link href="/shop" className="hover:text-[#8A1538] transition-colors">Shop</Link>
+              <span>/</span>
+              <span className="font-bold text-neutral-900">{initialCategoryName}</span>
+            </>
+          ) : (
+            <span className="font-bold text-neutral-900">Shop</span>
+          )}
         </nav>
 
         {/* ── Shop Hero Title & Live Controls ── */}
@@ -611,11 +671,13 @@ function matchCategoryOrSlug(
             <div className="flex items-center gap-2.5">
               <span className="w-2 h-7 bg-[#8A1538] rounded-full inline-block" />
               <h1 className="text-2xl sm:text-3xl font-black text-neutral-900 tracking-tight">
-                Shop
+                {initialCategoryName || "Shop"}
               </h1>
             </div>
             <p className="text-xs sm:text-sm text-neutral-500 mt-1">
-              Browse, filter, and find the perfect gear for you.
+              {initialCategoryName
+                ? `Browse and filter ${initialCategoryName} — Cash on Delivery across Qatar.`
+                : "Browse, filter, and find the perfect gear for you."}
             </p>
           </div>
 
@@ -846,8 +908,8 @@ function matchCategoryOrSlug(
             ) : (
               /* Exact matching card sizing grid */
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                {filteredAndSortedProducts.map((prod) => (
-                  <ProductCard key={prod.id} product={prod} currency={currency} />
+                {filteredAndSortedProducts.map((prod, idx) => (
+                  <ProductCard key={prod.id} product={prod} currency={currency} priority={idx < 4} />
                 ))}
               </div>
             )}
