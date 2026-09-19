@@ -2,7 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProductBySlug, getSiteSettings, getAllProducts } from "@/lib/data";
+import { getProductBySlug, getSiteSettings } from "@/lib/data";
 import { AnnouncementBar } from "@/components/store/announcement-bar";
 import { MainNavbar } from "@/components/store/main-navbar";
 import { ProductGallery } from "@/components/store/product-gallery";
@@ -17,17 +17,6 @@ interface ProductPageProps {
   params: Promise<{
     slug: string;
   }>;
-}
-
-export async function generateStaticParams() {
-  try {
-    const products = await getAllProducts();
-    return products
-      .filter((p) => p.is_active && p.slug)
-      .map((p) => ({ slug: p.slug }));
-  } catch {
-    return [];
-  }
 }
 
 export async function generateMetadata({
