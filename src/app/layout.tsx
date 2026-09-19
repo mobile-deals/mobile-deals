@@ -35,11 +35,11 @@ export const metadata: Metadata = {
   authors: [{ name: "Mobile Deals" }],
   creator: "Mobile Deals",
   publisher: "Mobile Deals Qatar",
-  metadataBase: new URL("https://mobiledeals.qa"),
+  metadataBase: new URL("https://mobiledealsqa.com"),
   openGraph: {
     type: "website",
     locale: "en_QA",
-    url: "https://mobiledeals.qa",
+    url: "https://mobiledealsqa.com",
     siteName: "Mobile Deals Qatar",
     title: "Mobile Deals Qatar | Best Tech Deals & Cash on Delivery",
     description:

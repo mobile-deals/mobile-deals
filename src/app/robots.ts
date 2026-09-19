@@ -16,6 +16,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: "https://mobiledeals.qa/sitemap.xml",
+    sitemap: "https://mobiledealsqa.com/sitemap.xml",
   };
 }

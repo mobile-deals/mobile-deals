@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const categories = await getCategories();
   const category = findCategory(categories, slug);
   if (!category) return { title: "Category Not Found" };
-  const baseUrl = "https://mobiledeals.qa";
+  const baseUrl = "https://mobiledealsqa.com";
   const canonicalUrl = `${baseUrl}/categories/${category.slug}`;
   const title = `${category.name} in Qatar | Mobile Deals Qatar`;
   const description = category.description || `Shop the best ${category.name} in Qatar at Mobile Deals. Genuine products, unbeatable prices, and Cash on Delivery nationwide.`;
@@ -95,7 +95,7 @@ export default async function CategoryDetailPage({ params }: CategoryPageProps) 
   const category = findCategory(categories, slug);
   if (!category) notFound();
 
-  const categoryUrl = `https://mobiledeals.qa/categories/${category.slug}`;
+  const categoryUrl = `https://mobiledealsqa.com/categories/${category.slug}`;
 
   // BreadcrumbList Structured Data
   const breadcrumbJsonLd = {
@@ -106,13 +106,13 @@ export default async function CategoryDetailPage({ params }: CategoryPageProps) 
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://mobiledeals.qa",
+        item: "https://mobiledealsqa.com",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Shop",
-        item: "https://mobiledeals.qa/shop",
+        item: "https://mobiledealsqa.com/shop",
       },
       {
         "@type": "ListItem",

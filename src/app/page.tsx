@@ -24,17 +24,17 @@ export const revalidate = 60; // ISR cache 60 seconds
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: "https://mobiledeals.qa",
+    canonical: "https://mobiledealsqa.com",
   },
   openGraph: {
     title: "Mobile Deals Qatar | Best Tech Deals & Cash on Delivery",
     description:
       "Qatar's premier store for mobiles, electronics, smartwatches, accessories and gadgets. Unbeatable prices, 100% genuine tech, Cash on Delivery nationwide.",
-    url: "https://mobiledeals.qa",
+    url: "https://mobiledealsqa.com",
     type: "website",
     images: [
       {
-        url: "https://mobiledeals.qa/fav-icon.png",
+        url: "https://mobiledealsqa.com/fav-icon.png",
         alt: "Mobile Deals Qatar",
         width: 512,
         height: 512,
@@ -60,12 +60,12 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "OnlineStore",
     name: "Mobile Deals Qatar",
-    url: "https://mobiledeals.qa",
-    logo: "https://mobiledeals.qa/fav-icon.png",
+    url: "https://mobiledealsqa.com",
+    logo: "https://mobiledealsqa.com/fav-icon.png",
     description:
       "Qatar's premier online destination for mobile phones, electronics, smartwatches, and accessories with Cash on Delivery nationwide.",
     telephone: settings.whatsapp_number || "+97455000000",
-    email: settings.store_email || "support@mobiledeals.qa",
+    email: settings.store_email || "support@mobiledealsqa.com",
     address: {
       "@type": "PostalAddress",
       addressLocality: "Doha",
@@ -80,12 +80,12 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Mobile Deals Qatar",
-    url: "https://mobiledeals.qa",
+    url: "https://mobiledealsqa.com",
     potentialAction: {
       "@type": "SearchAction",
       target: {
         "@type": "EntryPoint",
-        urlTemplate: "https://mobiledeals.qa/search?q={search_term_string}",
+        urlTemplate: "https://mobiledealsqa.com/search?q={search_term_string}",
       },
       "query-input": "required name=search_term_string",
     },
