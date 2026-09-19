@@ -32,6 +32,16 @@ export const metadata: Metadata = {
   title: "About Us | Mobile Deals Qatar",
   description:
     "Discover Mobile Deals Qatar — your premier destination for 100% authentic smartphones, electronics, accessories, and gadgets with fast doorstep Cash on Delivery across Qatar.",
+  alternates: {
+    canonical: "https://mobiledeals.qa/about",
+  },
+  openGraph: {
+    title: "About Us | Mobile Deals Qatar",
+    description:
+      "Qatar's trusted online electronics store offering authentic tech, direct WhatsApp support, and Cash on Delivery.",
+    url: "https://mobiledeals.qa/about",
+    type: "website",
+  },
 };
 
 export const revalidate = 60;

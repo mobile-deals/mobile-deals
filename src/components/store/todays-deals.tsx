@@ -83,7 +83,7 @@ export function TodaysDeals({ products = [], currency = "QAR" }: TodaysDealsProp
               {visibleProducts.map((prod, idx) => (
                 // On mobile: only show first 6 cards; on sm+ show all
                 <div key={prod.id} className={`h-full ${idx >= 6 ? "hidden sm:block" : ""}`}>
-                  <ProductCard product={prod} currency={currency} />
+                  <ProductCard product={prod} currency={currency} priority={idx < 2} />
                 </div>
               ))}
             </div>

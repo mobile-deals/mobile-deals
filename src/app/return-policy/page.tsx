@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   title: "Return Policy | Mobile Deals Qatar",
   description:
     "Official Return Policy for Mobile Deals Qatar. Learn about our 7-day return guidelines and special return conditions for mobile phones.",
+  alternates: {
+    canonical: "https://mobiledeals.qa/return-policy",
+  },
 };
 
 export const revalidate = 60;

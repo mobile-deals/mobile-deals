@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   title: "Privacy Policy | Mobile Deals Qatar",
   description:
     "Privacy Policy for Mobile Deals Qatar. Learn how we protect your personal information, contact data, and order details.",
+  alternates: {
+    canonical: "https://mobiledeals.qa/privacy-policy",
+  },
 };
 
 export const revalidate = 60;

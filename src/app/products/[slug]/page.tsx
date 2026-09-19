@@ -35,16 +35,33 @@ export async function generateMetadata({
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url;
 
+  const baseUrl = "https://mobiledeals.qa";
+  const canonicalUrl = `${baseUrl}/products/${product.slug}`;
+
+  const metaTitle = `${product.name} | Best Price in Qatar`;
+  const metaDesc =
+    product.short_description ||
+    `Buy ${product.name} at Mobile Deals Qatar with Cash on Delivery and fast doorstep shipping.`;
+
   return {
-    title: `${product.name} | Best Price in Qatar`,
-    description:
-      product.short_description ||
-      `Buy ${product.name} at Mobile Deals Qatar with Cash on Delivery and fast doorstep shipping.`,
+    title: metaTitle,
+    description: metaDesc,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: `${product.name} | Mobile Deals Qatar`,
       description:
         product.short_description || `Buy ${product.name} in Qatar at the best price.`,
-      images: primaryImage ? [{ url: primaryImage }] : [],
+      url: canonicalUrl,
+      type: "website",
+      images: primaryImage ? [{ url: primaryImage, alt: product.name }] : [],
+    },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: metaTitle,
+      description: metaDesc,
+      images: primaryImage ? [primaryImage] : [],
     },
   };
 }
@@ -64,15 +81,24 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url;
 
+  const productUrl = `https://mobiledeals.qa/products/${product.slug}`;
+
   // JSON-LD Structured Data for Google Product Schema
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
-    description: product.description || product.short_description,
+    description: product.description || product.short_description || product.name,
     image: primaryImage ? [primaryImage] : [],
+    url: productUrl,
+    sku: product.id,
+    brand: {
+      "@type": "Brand",
+      name: product.brand?.name || "Mobile Deals",
+    },
     offers: {
       "@type": "Offer",
+      url: productUrl,
       priceCurrency: settings.currency || "QAR",
       price: product.price,
       availability:
@@ -80,7 +106,54 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           ? "https://schema.org/InStock"
           : "https://schema.org/OutOfStock",
       itemCondition: "https://schema.org/NewCondition",
+      seller: {
+        "@type": "Organization",
+        name: "Mobile Deals Qatar",
+      },
     },
+  };
+
+  // BreadcrumbList Structured Data
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://mobiledeals.qa",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Shop",
+        item: "https://mobiledeals.qa/shop",
+      },
+      ...(product.category
+        ? [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.category.name,
+              item: `https://mobiledeals.qa/categories/${product.category.slug}`,
+            },
+            {
+              "@type": "ListItem",
+              position: 4,
+              name: product.name,
+              item: productUrl,
+            },
+          ]
+        : [
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: product.name,
+              item: productUrl,
+            },
+          ]),
+    ],
   };
 
   // Filter out internal gift/admin keys from the public-facing specs table
@@ -93,10 +166,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-white w-full max-w-full overflow-x-hidden">
-      {/* Inject JSON-LD */}
+      {/* Inject Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <AnnouncementBar items={settings.announcement_bar?.items} />
@@ -115,7 +192,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           {product.category && (
             <>
               <Link
-                href={`/shop?category=${encodeURIComponent(product.category.slug)}`}
+                href={`/categories/${product.category.slug}`}
                 className="hover:text-[#8A1538] font-medium transition-colors shrink-0"
               >
                 {product.category.name}

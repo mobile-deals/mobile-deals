@@ -12,9 +12,10 @@ import { getOptimizedImageUrl } from "@/lib/cloudinary";
 interface ProductCardProps {
   product: Product;
   currency?: string;
+  priority?: boolean;
 }
 
-export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
+export function ProductCard({ product, currency = "QAR", priority = false }: ProductCardProps) {
   const { addItem } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const [added, setAdded] = useState(false);
@@ -90,7 +91,7 @@ export function ProductCard({ product, currency = "QAR" }: ProductCardProps) {
               fill
               sizes="(max-width: 640px) 180px, (max-width: 1024px) 260px, 300px"
               className="object-contain p-3 group-hover:scale-105 transition-transform duration-300 ease-out"
-              loading="lazy"
+              {...(priority ? { priority: true } : { loading: "lazy" })}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-neutral-300">

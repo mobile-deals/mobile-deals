@@ -6,7 +6,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/checkout", "/order-success/"],
+        disallow: [
+          "/admin/",
+          "/checkout",
+          "/order-success/",
+          "/api/",
+          "/cart",
+          "/search",
+        ],
       },
     ],
     sitemap: "https://mobiledeals.qa/sitemap.xml",

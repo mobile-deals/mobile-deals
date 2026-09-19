@@ -21,6 +21,10 @@ export async function generateMetadata({
   const { q } = await searchParams;
   return {
     title: q ? `Search results for "${q}" | Mobile Deals` : "Search Products | Mobile Deals",
+    robots: {
+      index: false,
+      follow: true,
+    },
   };
 }
 
