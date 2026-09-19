@@ -35,7 +35,7 @@ export async function generateMetadata({
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url;
 
-  const baseUrl = "https://mobiledeals.qa";
+  const baseUrl = "https://mobiledealsqa.com";
   const canonicalUrl = `${baseUrl}/products/${product.slug}`;
 
   const metaTitle = `${product.name} | Best Price in Qatar`;
@@ -81,7 +81,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     product.product_images?.find((img) => img.is_primary)?.image_url ||
     product.product_images?.[0]?.image_url;
 
-  const productUrl = `https://mobiledeals.qa/products/${product.slug}`;
+  const productUrl = `https://mobiledealsqa.com/products/${product.slug}`;
 
   // JSON-LD Structured Data for Google Product Schema
   const jsonLd = {
@@ -122,13 +122,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://mobiledeals.qa",
+        item: "https://mobiledealsqa.com",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Shop",
-        item: "https://mobiledeals.qa/shop",
+        item: "https://mobiledealsqa.com/shop",
       },
       ...(product.category
         ? [
@@ -136,7 +136,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               "@type": "ListItem",
               position: 3,
               name: product.category.name,
-              item: `https://mobiledeals.qa/categories/${product.category.slug}`,
+              item: `https://mobiledealsqa.com/categories/${product.category.slug}`,
             },
             {
               "@type": "ListItem",

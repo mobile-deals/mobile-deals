@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://mobiledeals.qa";
+  const baseUrl = "https://mobiledealsqa.com";
 
   const supabase = createAdminClient();
 
