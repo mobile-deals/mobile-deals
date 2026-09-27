@@ -473,12 +473,6 @@ function CheckoutContent() {
                   <span className="text-neutral-500">Subtotal</span>
                   <span className="font-bold text-neutral-900 font-mono">QAR {subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-500">Delivery Across Qatar</span>
-                  <span className={`font-bold ${deliveryFee === 0 ? "text-emerald-600" : "text-neutral-900 font-mono"}`}>
-                    {deliveryFee === 0 ? "FREE" : `QAR ${deliveryFee.toLocaleString()}`}
-                  </span>
-                </div>
                 <div className="flex items-center justify-between pt-3 border-t border-neutral-100 text-base sm:text-lg">
                   <span className="font-bold text-neutral-900">Total Payable</span>
                   <span className="font-black text-[#8A1538] font-mono">
